@@ -1,7 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <ArduinoOTA.h>
 #include <WiFiUdp.h>
+#include <ESP8266WebServer.h>
+#include <WiFiClient.h>
 
 /**
  * A sketch to control two strings of RGBW LED lights from one ESP8266
@@ -10,11 +11,25 @@
  * @since  20180902
  */
 
-const char* ssid     = "my-network-ssid";
-const char* password = "my-network-password";
-const int TIMEZONE_OFFSET = (-1 * (8 * 3600)); // Currently GMT-8
+// Setup a wireless access point so the user can be prompted to connect to a network
+String  ssidPrefix = "appideas-";
+int serverPort = 5050;
+String ssid = "";
+String softIP  = "";
+bool wifiConnected = false;
+
+// Setup NTP parameters for syncing with network time
+const int TIMEZONE_OFFSET = 3600; // Number of seconds in an hour
+int inputTimezoneOffset = 0;
 const char* ntpServerName = "time.nist.gov";
 const int checkInterval = 60 * 30; // how often (in seconds) to query the NTP server for updates (30 minutes)
+// NTP parameters that shouldn't be changed
+unsigned int localPort = 2390;      // local port to listen for UDP packets
+IPAddress timeServerIP; // time.nist.gov NTP server address
+const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+// A UDP instance to let us send and receive packets over UDP
+WiFiUDP udp;
 
 // For reference (pin mapping for ESP8266-12E):
 // D0/GPIO16      = 16;
@@ -43,12 +58,12 @@ const int checkInterval = 60 * 30; // how often (in seconds) to query the NTP se
 int maxBrightness = 1024;
 int offBrightness = 0;
 
-int serverPort = 80;
 int status = WL_IDLE_STATUS;
 IPAddress ip;
 
-WiFiServer server( serverPort  );
+ESP8266WebServer server( serverPort );
 
+// Status variables
 int currentR = 0;
 int currentG = 0;
 int currentB = 0;
@@ -63,15 +78,6 @@ int currentRSecond = 0;
 int currentGSecond = 0;
 int currentBSecond = 0;
 int currentWSecond = 0;
-
-// NTP setup variables
-
-unsigned int localPort = 2390;      // local port to listen for UDP packets
-IPAddress timeServerIP; // time.nist.gov NTP server address
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP udp;
 
 String fullTime = String( "" );
 String humanTime = String( "" );
@@ -102,20 +108,12 @@ void setup()
   pinMode( RED_LED_SECOND, OUTPUT );
   pinMode( GREEN_LED_SECOND, OUTPUT );
   
-  connectToWifi();
-  initOta();
-  server.begin(); // Start the API server/service
+  startSoftAP();
+  startWebServer();
 
   // turn all the lights on when the ESP first powers on
   turnOn( "first" );
   turnOn( "second" );
-
-  // Get and show the time
-  Serial.println( "Starting UDP" );
-  udp.begin( localPort );
-  fullTime = getTime();
-  timeToVars();
-  Serial.println( "Current time: " + humanTime );
 }
 
 /**
@@ -227,8 +225,70 @@ void setColorToLevel( String whichPosition, String color, int level )
  */
 void loop() 
 {
-  ArduinoOTA.handle();
-  nodeServer();
+  //nodeServer();
+  server.handleClient();
+}
+
+void handleRoot()
+{
+  //server.send( 200, "text/html", connectionHtml() );
+  if( !wifiConnected )
+  {
+    Serial.println( "Connecting" );
+    server.send( 200, "text/html", connectionHtml() );
+  }
+  else
+  {
+    Serial.println( "Already connected" );
+    server.send( 200, "text/html", connectedHtml() );
+  }
+}
+
+void handleConnect()
+{
+  String hardSSID = server.arg( "ssid" );
+  String hardPassword = server.arg( "password" );
+  int tmpInputTimezoneOffset = server.arg( "timezone" ).toInt();
+
+  if( tmpInputTimezoneOffset != 0 )
+  {
+    inputTimezoneOffset = tmpInputTimezoneOffset;
+  }
+
+  if( !wifiConnected )
+  {
+    connectToWifi( hardSSID, hardPassword );
+  }
+
+  // Get and show the time
+  Serial.println( "Starting UDP" );
+  udp.begin( localPort );
+  fullTime = getTime();
+  timeToVars();
+  Serial.println( "Current time: " + humanTime );
+  
+  server.send( 200, "text/html", connectedHtml() );
+  Serial.println( "Connected to WiFi" );
+}
+
+void startSoftAP()
+{
+  String mac = WiFi.macAddress();
+  String macPartOne = mac.substring( 12, 14 );
+  String macPartTwo = mac.substring( 15 );
+  ssid = ssidPrefix + macPartOne + macPartTwo;
+  
+  WiFi.softAP( ssid.c_str() );
+  softIP = WiFi.softAPIP().toString();
+ 
+  Serial.println( getSoftAPStatus() );
+}
+
+void startWebServer()
+{
+  server.on( "/", handleRoot );
+  server.on( "/connect", handleConnect );
+  server.begin();
 }
 
 /**
@@ -238,13 +298,13 @@ void loop()
  * @author costmo
  * @since  20180902
  */
-void connectToWifi()
+void connectToWifi( String wifiSSID, String wifiPassword )
 {
   Serial.print( "Connecting to " );
-  Serial.println( ssid );
+  Serial.println( wifiSSID );
 
   WiFi.mode( WIFI_STA );
-  WiFi.begin( ssid, password );
+  WiFi.begin( wifiSSID.c_str(), wifiPassword.c_str() );
 
   while( WiFi.status() != WL_CONNECTED )
   {
@@ -253,6 +313,7 @@ void connectToWifi()
   }
   Serial.println( "." );
   Serial.println( "Connected" );
+  wifiConnected = true;
   printWifiStatus();
 }
 
@@ -265,20 +326,10 @@ void connectToWifi()
  */
 void printWifiStatus() 
 {
-  // print the SSID of the network you're attached to:
-//  Serial.print( "SSID: " );
-//  Serial.println( WiFi.SSID() );
-
-  // print your WiFi shield's IP address:
+  // print your WiFi IP address:
   ip = WiFi.localIP();
   Serial.print( "IP Address: " );
   Serial.println( ip );
-
-  // print the received signal strength:
-//  long rssi = WiFi.RSSI();
-//  Serial.print( "Signal strength (RSSI):" );
-//  Serial.print( rssi );
-//  Serial.println (" dBm" );
 }
 
 /**
@@ -311,53 +362,6 @@ void htmlHeader( WiFiClient client )
 void htmlFooter( WiFiClient client )
 {
     client.println( "</html>" );
-}
-
-/**
- * Initialize OTA communication
- * 
- * @return void
- * @author costmo
- * @since  20180902
- */
-void initOta()
-{
-  ArduinoOTA.onStart( []() 
-  {
-    String type;
-    if( ArduinoOTA.getCommand() == U_FLASH )
-    {
-      type = "sketch";
-    }
-    else // U_SPIFFS
-    {
-      type = "filesystem";
-    }
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    Serial.println( "Start updating " + type );
-  });
-  
-  ArduinoOTA.onEnd( []() 
-  {
-    Serial.println( "\nEnd" );
-  });
-  
-  ArduinoOTA.onProgress( [](unsigned int progress, unsigned int total ) 
-  {
-    Serial.printf( "Progress: %u%%\r", (progress / (total / 100)) );
-  });
-  
-  ArduinoOTA.onError( []( ota_error_t error ) 
-  {
-    Serial.printf( "Error[%u]: ", error );
-    if( error == OTA_AUTH_ERROR) { Serial.println( "Auth Failed" ); }
-    else if(error == OTA_BEGIN_ERROR) { Serial.println("Begin Failed"); }
-    else if(error == OTA_CONNECT_ERROR) { Serial.println("Connect Failed"); }
-    else if(error == OTA_RECEIVE_ERROR) { Serial.println("Receive Failed"); }
-    else if(error == OTA_END_ERROR) { Serial.println("End Failed"); }
-  });
-  ArduinoOTA.begin();
 }
  
 /**
@@ -447,143 +451,143 @@ float getRatioForColor( String whichPosition, String color )
  */
 void nodeServer()
 {
-   WiFiClient client = server.available();
-   if( client )
-   {
-      String requestString; 
-      boolean currentLineIsBlank = true;
-      while( client.connected() )
-      {
-        if( client.available() )
-        {
-          char c = client.read();
-          requestString += c;
-
-          // request is complete, parse it
-          if( c == '\n' && currentLineIsBlank )
-          {
-              htmlHeader( client );
-
-              String requestPosition = "first";
-              String requestColor = "all";
-              int requestLevel = 1024;
-
-              if( requestString.indexOf( "?action=id" ) > 0 )
-              {
-                byte mac[6];
-                WiFi.macAddress( mac );
-                // Using client.write multiple times caused scrolling output. Building a string causes instant output on completion, which is preferable
-//                String output = nodeType;
+//   WiFiClient client = server.available();
+//   if( client )
+//   {
+//      String requestString; 
+//      boolean currentLineIsBlank = true;
+//      while( client.connected() )
+//      {
+//        if( client.available() )
+//        {
+//          char c = client.read();
+//          requestString += c;
+//
+//          // request is complete, parse it
+//          if( c == '\n' && currentLineIsBlank )
+//          {
+//              htmlHeader( client );
+//
+//              String requestPosition = "first";
+//              String requestColor = "all";
+//              int requestLevel = 1024;
+//
+//              if( requestString.indexOf( "?action=id" ) > 0 )
+//              {
+//                byte mac[6];
+//                WiFi.macAddress( mac );
+//                // Using client.write multiple times caused scrolling output. Building a string causes instant output on completion, which is preferable
+////                String output = nodeType;
+////                output += "|";
+//                String output = String( mac[0], HEX );
+//                output +=  ":" ;
+//                output += String( mac[1], HEX );
+//                output +=  ":" ;
+//                output += String( mac[2], HEX );
+//                output +=  ":" ;
+//                output += String( mac[3], HEX );
+//                output +=  ":" ;
+//                output += String( mac[4], HEX );
+//                output +=  ":" ;
+//                output += String( mac[5], HEX );
 //                output += "|";
-                String output = String( mac[0], HEX );
-                output +=  ":" ;
-                output += String( mac[1], HEX );
-                output +=  ":" ;
-                output += String( mac[2], HEX );
-                output +=  ":" ;
-                output += String( mac[3], HEX );
-                output +=  ":" ;
-                output += String( mac[4], HEX );
-                output +=  ":" ;
-                output += String( mac[5], HEX );
-                output += "|";
-                output += WiFi.localIP();
-//                output += "|";
-//                output += nodeVersion;
-                client.println( output );
-                return; // We don't want to go below this if the request was for "id"
-              }
-              
-              // parse the incoming request and do the work
-              // p = "position" = first|second
-              // c = "color" = red|green|blue|white|all
-              // l ="level" = 0|25|50|75|100
-              if( requestString.indexOf( "?p=second" ) > 0 || requestString.indexOf( "&p=second" ) > 0 )
-              {
-                requestPosition = "second";
-              }
-              if( requestString.indexOf( "?c=r" ) > 0 || requestString.indexOf( "&c=r" ) > 0 )
-              {
-                requestColor = "red";
-              }
-              if( requestString.indexOf( "?c=g" ) > 0 || requestString.indexOf( "&c=g" ) > 0 )
-              {
-                requestColor = "green";
-              }
-              if( requestString.indexOf( "?c=b" ) > 0 || requestString.indexOf( "&c=b" ) > 0 )
-              {
-                requestColor = "blue";
-              }
-              if( requestString.indexOf( "?c=w" ) > 0 || requestString.indexOf( "&c=w" ) > 0 )
-              {
-                requestColor = "white";
-              }
-              
-              if( requestString.indexOf( "?l=0" ) > 0 || requestString.indexOf( "&l=0" ) > 0 )
-              {
-                requestLevel = 0;
-              }
-              if( requestString.indexOf( "?l=25" ) > 0 || requestString.indexOf( "&l=25" ) > 0 )
-              {
-                requestLevel = 256;
-              }
-              if( requestString.indexOf( "?l=50" ) > 0 || requestString.indexOf( "&l=50" ) > 0 )
-              {
-                requestLevel = 512;
-              }
-              if( requestString.indexOf( "?l=75" ) > 0 || requestString.indexOf( "&l=75" ) > 0 )
-              {
-                requestLevel = 768;
-              }
-
-
-              if( requestColor == "all"  )
-              {
-                if( requestLevel == 100 )
-                {
-                  turnOn( requestPosition );
-                }
-                else if( requestLevel == 0 )
-                {
-                  turnOff( requestPosition );
-                }
-                else
-                {
-                  setColorToLevel( requestPosition, "red", requestLevel );
-                  setColorToLevel( requestPosition, "green", requestLevel );
-                  setColorToLevel( requestPosition, "blue", requestLevel );
-                  setColorToLevel( requestPosition, "white", requestLevel );
-                }
-              }
-              else
-              {
-                setColorToLevel( requestPosition, requestColor, requestLevel );
-              }
-
-              client.println( getValues() );
-              
-              htmlFooter( client );
-              break;
-          } // if( c == '\n' && currentLineIsBlank )
-          if( c == '\n' ) 
-          {
-            currentLineIsBlank = true;
-          } 
-          else if( c != '\r' ) 
-          {
-            // you've gotten a character on the current line
-            currentLineIsBlank = false;
-          }
-          
-        } // if( client.available() )
-      } // while( client.connected() )
-
-    // give the web browser time to receive the data
-    delay( 1 );
-
-    // close the connection:
-    client.stop();
-   } // if( client )
+//                output += WiFi.localIP();
+////                output += "|";
+////                output += nodeVersion;
+//                client.println( output );
+//                return; // We don't want to go below this if the request was for "id"
+//              }
+//              
+//              // parse the incoming request and do the work
+//              // p = "position" = first|second
+//              // c = "color" = red|green|blue|white|all
+//              // l ="level" = 0|25|50|75|100
+//              if( requestString.indexOf( "?p=second" ) > 0 || requestString.indexOf( "&p=second" ) > 0 )
+//              {
+//                requestPosition = "second";
+//              }
+//              if( requestString.indexOf( "?c=r" ) > 0 || requestString.indexOf( "&c=r" ) > 0 )
+//              {
+//                requestColor = "red";
+//              }
+//              if( requestString.indexOf( "?c=g" ) > 0 || requestString.indexOf( "&c=g" ) > 0 )
+//              {
+//                requestColor = "green";
+//              }
+//              if( requestString.indexOf( "?c=b" ) > 0 || requestString.indexOf( "&c=b" ) > 0 )
+//              {
+//                requestColor = "blue";
+//              }
+//              if( requestString.indexOf( "?c=w" ) > 0 || requestString.indexOf( "&c=w" ) > 0 )
+//              {
+//                requestColor = "white";
+//              }
+//              
+//              if( requestString.indexOf( "?l=0" ) > 0 || requestString.indexOf( "&l=0" ) > 0 )
+//              {
+//                requestLevel = 0;
+//              }
+//              if( requestString.indexOf( "?l=25" ) > 0 || requestString.indexOf( "&l=25" ) > 0 )
+//              {
+//                requestLevel = 256;
+//              }
+//              if( requestString.indexOf( "?l=50" ) > 0 || requestString.indexOf( "&l=50" ) > 0 )
+//              {
+//                requestLevel = 512;
+//              }
+//              if( requestString.indexOf( "?l=75" ) > 0 || requestString.indexOf( "&l=75" ) > 0 )
+//              {
+//                requestLevel = 768;
+//              }
+//
+//
+//              if( requestColor == "all"  )
+//              {
+//                if( requestLevel == 100 )
+//                {
+//                  turnOn( requestPosition );
+//                }
+//                else if( requestLevel == 0 )
+//                {
+//                  turnOff( requestPosition );
+//                }
+//                else
+//                {
+//                  setColorToLevel( requestPosition, "red", requestLevel );
+//                  setColorToLevel( requestPosition, "green", requestLevel );
+//                  setColorToLevel( requestPosition, "blue", requestLevel );
+//                  setColorToLevel( requestPosition, "white", requestLevel );
+//                }
+//              }
+//              else
+//              {
+//                setColorToLevel( requestPosition, requestColor, requestLevel );
+//              }
+//
+//              client.println( getValues() );
+//              
+//              htmlFooter( client );
+//              break;
+//          } // if( c == '\n' && currentLineIsBlank )
+//          if( c == '\n' ) 
+//          {
+//            currentLineIsBlank = true;
+//          } 
+//          else if( c != '\r' ) 
+//          {
+//            // you've gotten a character on the current line
+//            currentLineIsBlank = false;
+//          }
+//          
+//        } // if( client.available() )
+//      } // while( client.connected() )
+//
+//    // give the web browser time to receive the data
+//    delay( 1 );
+//
+//    // close the connection:
+//    client.stop();
+//   } // if( client )
 } // void nodeServer()
 
 /**
@@ -684,8 +688,6 @@ String getTime()
     cb = udp.parsePacket();
   }
 
-//    Serial.print( "packet received, length=" );
-//    Serial.println( cb );
     // We've received a packet, read the data from it
     udp.read( packetBuffer, NTP_PACKET_SIZE ); // read the packet into the buffer
 
@@ -697,25 +699,14 @@ String getTime()
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
     unsigned long secsSince1900 = highWord << 16 | lowWord;
-//    Serial.print( "Seconds since Jan 1 1900 = " );
-//    Serial.println( secsSince1900 );
 
     // now convert NTP time into everyday time:
-//    Serial.print( "Unix time = " );
     // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
     const unsigned long seventyYears = 2208988800UL;
     // subtract seventy years:
     unsigned long epoch = secsSince1900 - seventyYears;
-    // print Unix time:
-//    Serial.println( epoch );
 
-    epoch = epoch + TIMEZONE_OFFSET;
-//    Serial.print( "The local epoch time is " + epoch );
-//    Serial.println( epoch );
-
-
-    // print the hour, minute and second:
-    //Serial.print( "The local time is " );       // UTC is the time at Greenwich Meridian (GMT)
+    epoch = epoch + (TIMEZONE_OFFSET * (inputTimezoneOffset + 1));
 
     int hour = ((epoch  % 86400L) / 3600);
     int minute = ((epoch  % 3600) / 60);
@@ -750,14 +741,6 @@ String getTime()
     {
       returnValue = String( returnValue + " 0" );
     }
-    
-//    Serial.print( hour ); // print the hour (86400 equals secs per day)
-//    Serial.print(':');
-//    Serial.print( minute ); // print the minute (3600 equals secs per minute)
-//    Serial.print(':');
-//    Serial.println( second ); // print the second
-//    Serial.print( "RV: " );
-//    Serial.println( returnValue );
 
     humanTime = String( hour );
     humanTime = String( humanTime + ":" );
@@ -787,9 +770,6 @@ String getTime()
  */
 void timeToVars()
 {
-  //Serial.println( "Time: " + fullTime );
-//  Serial.println( "Second: " + currentSecond );
-
   int separator1 = fullTime.indexOf( ' ' );
   int separator2 = fullTime.indexOf( ' ', (separator1 + 1) );
   int separator3 = fullTime.indexOf( ' ', (separator2 + 1) );
@@ -832,14 +812,6 @@ void timeToVars()
     currentMeridiem = 0;
   }
 
-  
-//  Serial.print( currentHour);
-//  Serial.print( currentMinute );
-//  Serial.print( currentSecond );
-//  Serial.print( "-" );
-//  Serial.print( currentMeridiem );
-//  Serial.println( "" );
-
   if( currentHour < 12 && currentMeridiem > 0 )
   {
     currentHour = currentHour + 12;
@@ -854,20 +826,6 @@ void timeToVars()
   String timeString = String( currentHour );
   timeString = timeString + stringMinute;
   intTime = timeString.toInt();
-
-  //Serial.println( intTime );
-  
-/*
-  Serial.print( "Ticking: " );
-  Serial.print( currentHour );
-  Serial.print( ":" );
-  Serial.print( currentMinute );
-  Serial.print( ":" );
-  Serial.print( currentSecond );
-  Serial.print( " " );
-  Serial.println( currentMeridiem );
-  */
-  
 }
 
  /**
@@ -902,3 +860,64 @@ unsigned long sendNTPpacket( IPAddress& address )
   udp.endPacket();
 }
 
+String getSoftAPStatus()
+{
+  String returnValue = "\n";
+  returnValue += "SSID: " + ssid + "\n";
+  returnValue += "IP  : " + softIP + "\n";
+
+  return returnValue;
+}
+
+const String connectionHtml()
+{
+  const String returnValue =
+    "<!DOCTYPE HTML>"
+    "<html>"
+    "<head>"
+    "<meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
+    "<title>Connect to WiFi</title>"
+    "<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>"
+    "<style>"
+    "body { background-color: #D3E3F1; font-family: \"Open Sans\", sans-serif; Color: #000000; }"
+    "#header { width: 100%; text-align: center; }"
+    "input[type=text], input[type=password] { width: 50%; height: 30px; padding-left: 10px; }"
+    "</style>"
+    "</head>"
+    "<body>"
+    "<div id='header'><h3>Connect to your WiFi network</h3></div>"
+    "<FORM action=\"/connect\" method=\"post\">"
+    "<P>"
+    "<p><INPUT type=\"text\" name=\"ssid\" placeholder=\"SSID\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\"></p>"
+    "<p><INPUT type=\"password\" name=\"password\" placeholder=\"Password\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\"></p>"
+    "<p><INPUT type=\"text\" name=\"timezone\" placeholder=\"Timezone Offset (e.g. -8)\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\"></p><br>"
+    "<p><INPUT type=\"submit\" value=\"CONNECT\"></p>"
+    "</P>"
+    "</FORM>"
+    "</body>"
+    "</html>";
+
+  return returnValue;
+}
+
+const String connectedHtml()
+{
+  const String returnValue =
+    "<!DOCTYPE HTML>"
+    "<html>"
+    "<head>"
+    "<meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
+    "<title>Connect to WiFi</title>"
+    "<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>"
+    "<style>"
+    "body { background-color: #D3E3F1; font-family: \"Open Sans\", sans-serif; Color: #000000; }"
+    "#header { width: 100%; text-align: center; }"
+    "</style>"
+    "</head>"
+    "<body>"
+    "You are connected to WiFi"
+    "</body>"
+    "</html>";
+
+  return returnValue;
+}
