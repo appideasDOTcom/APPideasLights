@@ -311,6 +311,9 @@ void handleConnect()
     connectToWifi( ssid, hardPassword );
   }
 
+  String newIp = WiFi.localIP().toString();
+  server.send( 200, "text/html", redirect( newIp ) ); // Redirecting really doesn't work since the device will already be on a different network. We can still try, tough.
+
   // Get and show the time
   Serial.println( "Starting UDP" );
   udp.begin( localPort );
@@ -518,10 +521,6 @@ void handleControl()
   String lightPosition = server.arg( "p" );
   String lightColor = server.arg( "c" );
   int lightLevel = server.arg( "l" ).toInt();
-
-  Serial.println( lightPosition );
-  Serial.println( lightColor );
-  Serial.println( lightLevel );
 
   String requestPosition = "first";
   String requestColor = lightColor;
@@ -921,6 +920,25 @@ const String connectedHtml()
     "</head>"
     "<body>"
     "You are connected to WiFi"
+    "</body>"
+    "</html>";
+
+  return returnValue;
+}
+
+
+String redirect( String newIP )
+{
+  Serial.println( "NEW IP: " + newIP );
+  String returnValue =
+    "<!DOCTYPE HTML>"
+    "<html>"
+    "<head>"
+    "<script type=\"text/javascript\">"
+    " window.location = \"http://" + newIP + "/\""
+    "</script>"
+    "</head>"
+    "<body>"
     "</body>"
     "</html>";
 
