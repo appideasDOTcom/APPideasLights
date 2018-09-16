@@ -33,31 +33,58 @@ export class HomeScreen extends React.Component {
 							{
 									var data = { "ipAddr": res.ipAddr, "name": res.name };
 									nodeArray.push( data );
+									if( i == 16 )
+									{
+										// Check to see what network we're on
+										  NetworkInfo.getIPAddress( 
+										  function( ip )
+										  { 
+											  // If we're on the ESP network, go to the connection screen
+											  if( ip.startsWith( "192.168.4." ) )
+											  {
+												  navigate( 'Connect' );
+											  }
+											  else
+											  {
+												  navigate( 'Nodes', 
+													{
+														itemData: nodeArray
+													} );
+											  }
+										  });
+									}
 							}
-							catch( e ){} // catch
+							catch( e )
+							{
+								if( i == 16 )
+								{
+									// Check to see what network we're on
+									  NetworkInfo.getIPAddress( 
+									  function( ip )
+									  { 
+										  // If we're on the ESP network, go to the connection screen
+										  if( ip.startsWith( "192.168.4." ) )
+										  {
+											  navigate( 'Connect' );
+										  }
+										  else
+										  {
+											  navigate( 'Nodes', 
+												{
+													itemData: nodeArray
+												} );
+										  }
+									  });
+								}
+								
+							} // catch
 						} // (res) function
 				); // then
 
 				
 		} // for 
+		
 		  
-		  // Check to see what network we're on
-		  NetworkInfo.getIPAddress( 
-		  function( ip )
-		  { 
-			  // If we're on the ESP network, go to the connection screen
-			  if( ip.startsWith( "192.168.4." ) )
-			  {
-				  navigate( 'Connect' );
-			  }
-			  else
-			  {
-				  navigate( 'Nodes', 
-					{
-						itemData: nodeArray
-					} );
-			  }
-		  });
 		  
 		  
 		    return (

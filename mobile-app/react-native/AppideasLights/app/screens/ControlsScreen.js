@@ -16,8 +16,7 @@ export class ControlsScreen extends React.Component {
 				};
 		
 		incomingData = this.props.navigation.getParam( "itemData", new Array() );
-		ipAddrr = incomingData.ipAddr;
-		console.log( "Incoming IP: " + ipAddrr );
+		ipAddr = incomingData.ipAddr;
 		nav = props.navigation;
 	}
 	
