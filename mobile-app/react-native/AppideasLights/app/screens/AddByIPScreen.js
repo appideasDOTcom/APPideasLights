@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Button, Text, View, TextInput} from 'react-native';
 import store from 'react-native-simple-store';
+import {StackActions, NavigationActions} from 'react-navigation';
 
 export class AddByIPScreen extends React.Component {
 	
@@ -15,9 +16,15 @@ export class AddByIPScreen extends React.Component {
 				{ 
 					ipAddr: text,
 					name: 'controller_0',
+					niceName: text,
 				}
 		);
-		this.props.navigation.goBack();
+		const resetNavStack = StackActions.reset({
+		    index: 0,
+		    actions: [
+		      NavigationActions.navigate({ routeName: 'Home'})
+		    ] })
+		this.props.navigation.dispatch( resetNavStack );
 	}
 	
 	  render() {

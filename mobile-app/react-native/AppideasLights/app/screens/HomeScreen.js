@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {Button, Platform, StyleSheet, Text, View} from 'react-native';
 import { NetworkInfo } from 'react-native-network-info';
-import store from 'react-native-simple-store';
+import store from 'react-native-simple-store'; 
 
 nodeArray = [];
 
@@ -19,7 +19,7 @@ export class HomeScreen extends React.Component {
 	
 	  render() 
 	  {
-		  const { navigate } = this.props.navigation;
+		const { navigate } = this.props.navigation;
 		  
 		for( var i = 0; i < 16; i++ )
 		{
@@ -31,7 +31,7 @@ export class HomeScreen extends React.Component {
 						{
 							try
 							{
-									var data = { "ipAddr": res.ipAddr, "name": res.name };
+									var data = { "ipAddr": res.ipAddr, "name": res.name, "niceName": res.niceName };
 									nodeArray.push( data );
 									if( i == 16 )
 									{

@@ -23,7 +23,7 @@ export class NodesScreen extends React.Component {
 	{
 	     this.setState(
 	     {
-	    	 blankView: !this.state.blankView
+	    	 blankView: false
 	     })
 	}
 	
@@ -58,6 +58,7 @@ export class NodesScreen extends React.Component {
 									if( incomingIP.length > 0 )
 									{
 										savedItemCount++;
+										this.setState( blankView: false );
 									}
 									if( i >= 15 )
 									{
@@ -97,7 +98,7 @@ export class NodesScreen extends React.Component {
 	  render() {
 
 			if( !this.state.blankView )
-		  {
+		  	{
 			  return <AvailableNodes changeView = { () => this.changeView() } />
 			}
 			
@@ -112,7 +113,6 @@ export class NodesScreen extends React.Component {
 
 export default class AvailableNodes extends Component
 {
-
 	constructor( props )
 	{
 		super( props );
@@ -128,7 +128,7 @@ export default class AvailableNodes extends Component
 					renderItem = {item => (
 						<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff', paddingTop: 20, paddingBottom: 20, borderColor: 'gray', borderWidth: 1 }}>
 							<Button style={{ flex:1, assignSelf: 'stretch', width:'100%', height:'100%', backgroundColor: '#fff' }}
-								title={item.ipAddr}
+								title={ item.niceName }
 								onPress={ () => nav.navigate( 'Control', 
 									{
 										itemData: item
