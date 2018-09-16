@@ -14,8 +14,6 @@ export class HomeScreen extends React.Component {
 	    headerBackTitle: ' '
 	  };
 	
-	
-	
 	  render() 
 	  {
 		  const { navigate } = this.props.navigation;
@@ -24,6 +22,7 @@ export class HomeScreen extends React.Component {
 		  NetworkInfo.getIPAddress( 
 		  function( ip )
 		  { 
+			  // If we're on the ESP network, go to the connection screen
 			  if( ip.startsWith( "192.168.4." ) )
 			  {
 				  navigate( 'Connect' );
@@ -32,7 +31,6 @@ export class HomeScreen extends React.Component {
 			  {
 				  navigate( 'Nodes' );
 			  }
-			  console.log( ip ); 
 		  });
 		  
 		  
