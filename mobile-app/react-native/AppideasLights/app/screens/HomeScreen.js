@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import {Button, Platform, StyleSheet, Text, View} from 'react-native';
 import { NetworkInfo } from 'react-native-network-info';
+import store from 'react-native-simple-store';
+
+nodeArray = [];
 
 export class HomeScreen extends React.Component {
 	
@@ -18,6 +21,26 @@ export class HomeScreen extends React.Component {
 	  {
 		  const { navigate } = this.props.navigation;
 		  
+		for( var i = 0; i < 16; i++ )
+		{
+			var controllerName = "controller_" + i;
+
+				store.get( controllerName )
+				.then(
+					(res) =>
+						{
+							try
+							{
+									var data = { "ipAddr": res.ipAddr, "name": res.name };
+									nodeArray.push( data );
+							}
+							catch( e ){} // catch
+						} // (res) function
+				); // then
+
+				
+		} // for 
+		  
 		  // Check to see what network we're on
 		  NetworkInfo.getIPAddress( 
 		  function( ip )
@@ -29,7 +52,10 @@ export class HomeScreen extends React.Component {
 			  }
 			  else
 			  {
-				  navigate( 'Nodes' );
+				  navigate( 'Nodes', 
+					{
+						itemData: nodeArray
+					} );
 			  }
 		  });
 		  

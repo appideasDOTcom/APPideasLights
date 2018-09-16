@@ -6,6 +6,7 @@ import GridView from 'react-native-super-grid';
 nav = "";
 handledItemCount = false;
 savedItemCount = 0;
+nodeArray = [];
 
 export class NodesScreen extends React.Component {
 
@@ -14,6 +15,7 @@ export class NodesScreen extends React.Component {
 		super( props );
 		this.updateSavedItemCount();
 		this.state = { blankView: true };
+		nodeArray = this.props.navigation.getParam( 'itemData', new Array() );
 		nav = props.navigation;
 	}
 	
@@ -118,27 +120,6 @@ export default class AvailableNodes extends Component
 
 	render()
 	{
-
-		var nodeArray = new Array();
-
-		for( var i = 0; i < savedItemCount; i++ )
-		{
-			var controllerName = "controller_" + i;
-
-				store.get( controllerName )
-				.then(
-					(res) =>
-						{
-							try
-							{
-									var incomingIP = res.ipAddr;
-									nodeArray.push( incomingIP );
-							}
-							catch( e ){} // catch
-						} // (res) function
-				); // then
-		} // for 
-
 		return(
 			<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50, height: 75 }}>
 				<GridView
@@ -147,10 +128,10 @@ export default class AvailableNodes extends Component
 					renderItem = {item => (
 						<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff', paddingTop: 20, paddingBottom: 20, borderColor: 'gray', borderWidth: 1 }}>
 							<Button style={{ flex:1, assignSelf: 'stretch', width:'100%', height:'100%', backgroundColor: '#fff' }}
-								title={item}
+								title={item.ipAddr}
 								onPress={ () => nav.navigate( 'Control', 
 									{
-										ipAddr: item
+										itemData: item
 									} )  }
 							/>
 						</View>

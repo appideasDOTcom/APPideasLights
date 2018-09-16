@@ -12,7 +12,10 @@ export class AddByIPScreen extends React.Component {
 	saveInput( text )
 	{
 		store.update( 'controller_0', 
-				{ ipAddr: text }
+				{ 
+					ipAddr: text,
+					name: 'controller_0',
+				}
 		);
 		this.props.navigation.goBack();
 	}

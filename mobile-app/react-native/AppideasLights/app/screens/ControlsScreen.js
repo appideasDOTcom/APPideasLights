@@ -3,6 +3,7 @@ import {Button, Text, View, Switch, Slider, ScrollView} from 'react-native';
 
 var ipAddr = "";
 nav = "";
+var incomingData = new Array();
 
 export class ControlsScreen extends React.Component {
 	
@@ -13,7 +14,10 @@ export class ControlsScreen extends React.Component {
 				rValue1: 100, gValue1: 100, bValue1: 100, wValue1: 100,
 				rValue2: 100, gValue2: 100, bValue2: 100, wValue2: 100
 				};
-		ipAddr = this.props.navigation.getParam( 'ipAddr', '0' );
+		
+		incomingData = this.props.navigation.getParam( "itemData", new Array() );
+		ipAddrr = incomingData.ipAddr;
+		console.log( "Incoming IP: " + ipAddrr );
 		nav = props.navigation;
 	}
 	
@@ -42,7 +46,7 @@ export class ControlsScreen extends React.Component {
 	            <Button
 					onPress={ () => { nav.navigate( 'Config', 
 							{
-								ipAddr: ipAddr
+								itemData: incomingData
 							} ); } }
 		            title="Config"
 		            color="#000"
