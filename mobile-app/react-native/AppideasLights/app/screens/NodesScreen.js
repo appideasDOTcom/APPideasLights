@@ -31,7 +31,6 @@ export class NodesScreen extends React.Component {
 	    headerRight: (
 	            <Button
 								onPress={ () => { nav.navigate( 'AddNode' ); } }
-								//onPress={ () => { this.changeView(); } }
 		            title="+"
 		            color="#000"
 		        />

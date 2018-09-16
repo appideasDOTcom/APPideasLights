@@ -10,6 +10,7 @@ import { AddNodeScreen } from './app/screens/AddNodeScreen.js';
 import { AddByIPScreen } from './app/screens/AddByIPScreen.js';
 import { AddByScanScreen } from './app/screens/AddByScanScreen.js';
 import { ControlsScreen } from './app/screens/ControlsScreen.js';
+import { ConfigScreen } from './app/screens/ConfigScreen.js';
 
 const RootStack = 
 	createStackNavigator
@@ -23,6 +24,7 @@ const RootStack =
 		    AddByIP: AddByIPScreen,
 		    AddByScan: AddByScanScreen,
 		    Control: ControlsScreen,
+		    Config: ConfigScreen,
 		  },
 		  {
 		    initialRouteName: 'Home',
