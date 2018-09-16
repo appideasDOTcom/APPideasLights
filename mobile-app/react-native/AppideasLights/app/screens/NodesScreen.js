@@ -90,7 +90,6 @@ export class NodesScreen extends React.Component {
 				{
 					this.changeView();
 				}
-				console.log( "Final count: " + savedItemCount );
 			}
 		}
 	
@@ -141,18 +140,19 @@ export default class AvailableNodes extends Component
 				); // then
 		} // for 
 
-		console.log( "Render available nodes: " + savedItemCount );
 		return(
 			<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50, height: 75 }}>
 				<GridView
 					itemDimension = {130}
 					items = {nodeArray}
-					onCLick = { () => { alert( "CLICK" ); } }
 					renderItem = {item => (
 						<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff', paddingTop: 20, paddingBottom: 20, borderColor: 'gray', borderWidth: 1 }}>
 							<Button style={{ flex:1, assignSelf: 'stretch', width:'100%', height:'100%', backgroundColor: '#fff' }}
 								title={item}
-								onPress={ () => nav.navigate( 'Control' )  }
+								onPress={ () => nav.navigate( 'Control', 
+									{
+										ipAddr: item
+									} )  }
 							/>
 						</View>
 					) }

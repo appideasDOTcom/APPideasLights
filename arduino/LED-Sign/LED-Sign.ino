@@ -813,10 +813,10 @@ String getStatus()
   StaticJsonBuffer<1024> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
 
-  JsonArray& fv = root.createNestedArray( "first-values" );
-  JsonArray& fr = root.createNestedArray( "first-ratios" );
-  JsonArray& sv = root.createNestedArray( "second-values" );
-  JsonArray& sr = root.createNestedArray( "second-ratios" );
+  JsonArray& fv = root.createNestedArray( "firstvalues" );
+  JsonArray& fr = root.createNestedArray( "firstratios" );
+  JsonArray& sv = root.createNestedArray( "secondvalues" );
+  JsonArray& sr = root.createNestedArray( "secondratios" );
 
   fv.add( getLevelForColor( "first", "red" ) );
   fv.add( getLevelForColor( "first", "green" ) );

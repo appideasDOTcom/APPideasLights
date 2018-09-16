@@ -5,7 +5,8 @@ export class ConnectScreen extends React.Component {
 	
 	static navigationOptions = {
 	    title: 'Connect',
-	    headerBackTitle: 'Back'
+	    headerBackTitle: 'Back',
+	    	headerLeft: null,
 	  };
 	
 	  render() {
