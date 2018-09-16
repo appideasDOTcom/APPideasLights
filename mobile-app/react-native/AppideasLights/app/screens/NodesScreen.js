@@ -26,7 +26,7 @@ export class NodesScreen extends React.Component {
 	
 	  render() {
 	    return (
-	      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#D3E3F1' }}>
+	      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50 }}>
 	        <Text>You have not setup any WiFi LED controllers.{"\n\n"}Click the "+" button at the top to get started.</Text>
 	      </View>
 	    );

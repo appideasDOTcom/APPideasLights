@@ -5,7 +5,7 @@ export class DetailsScreen extends React.Component {
 	
 	static navigationOptions = {
 	    title: 'Details',
-	    headerBackTitle: ' '
+	    headerBackTitle: 'Back'
 	  };
 	
 	  render() {

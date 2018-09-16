@@ -37,7 +37,7 @@ export class HomeScreen extends React.Component {
 		  
 		  
 		    return (
-			      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#D3E3F1' }}>
+			      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50 }}>
 			        <Text>Getting things started...</Text>
 			      </View>
 		    );

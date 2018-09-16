@@ -5,21 +5,21 @@ export class AddNodeScreen extends React.Component {
 	
 	static navigationOptions = {
 	    title: 'Add lights',
-	    headerBackTitle: ' ',
+	    headerBackTitle: 'Back',
 	  };
 	
 	  render() {
 	    return (
-	      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#D3E3F1' }}>
+	      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50 }}>
 	        <Text>Add a WiFi LED controller...{"\n\n"}</Text>
 	        <Button
 	          title="By IP address"
-	          onPress={() => this.props.navigation.navigate('Home')}
+	          onPress={() => this.props.navigation.navigate( 'AddByIP' )}
 	        />
 	        <Text>{"\n"}</Text>
 	        <Button
 	          title="Scan network"
-	          onPress={() => this.props.navigation.goBack()}
+	          onPress={() =>  this.props.navigation.navigate( 'AddByScan' )}
 	        />
 	      </View>
 	    );
