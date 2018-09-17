@@ -88,7 +88,7 @@ export class ControlsScreen extends React.Component {
 				this.setAllSliders( whichSet, 100 );
 			}
 		}
-		var response = this.sendCommand( "control", args );
+		this.sendCommand( "control", args );
 	}
 	
 	handleSlide( section, color, value )
@@ -96,7 +96,7 @@ export class ControlsScreen extends React.Component {
 		var args = "p=" + section;
 		args += "&c=" + color;
 		args += "&l=" + value;
-		var response = this.sendCommand( "control", args );
+		this.sendCommand( "control", args );
 		
 		if( "red" == color )
 		{
@@ -280,12 +280,12 @@ export class ControlsScreen extends React.Component {
 		    .then(
 		    		(response) => 
 		    		{
-		    			var jsonString = JSON.stringify( response );
-		    			var json = JSON.parse( jsonString );
-		    			var bodyJsonString = JSON.stringify( json._bodyInit );
-		    			var bodyJson = JSON.parse( json._bodyInit );
-
-		    			return( bodyJson );
+//		    			var jsonString = JSON.stringify( response );
+//		    			var json = JSON.parse( jsonString );
+//		    			var bodyJsonString = JSON.stringify( json._bodyInit );
+//		    			var bodyJson = JSON.parse( json._bodyInit );
+//
+//		    			return( bodyJson );
 		    			response.json();
 		    		})
 		    .then((responseJson) => {

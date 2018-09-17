@@ -284,6 +284,26 @@ void handleRollCall()
 }
 
 /**
+ * Handler for requests to "/rollcall"
+ * 
+ * This is here so an app can easily scan a network and find nodes
+ * 
+ * @return void
+ * @author costmo
+ * @since  20180913
+ */
+void sendBlank()
+{
+  String sendValue = "";
+  StaticJsonBuffer<32> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root[""] = "";
+  root.printTo( sendValue );
+  
+  server.send( 200, "text/html", sendValue );
+}
+
+/**
  * Handler for requests to "/connect"
  * 
  * This should only take requests to login to the network. It can't do anything by itself
@@ -543,8 +563,10 @@ void handleControl()
   {
     setColorToLevel( requestPosition, requestColor, requestLevel );
   }
-  delay( 100 ); // give the web server a small amount of time to buffer and send
-  server.send( 200, "text/html", getStatus() );
+  delay( 50 ); // give the web server a small amount of time to buffer and send
+  // server.send( 200, "text/html", getStatus() );
+  sendBlank();
+  server.send( 200, "text/html", "" ); // see if we can improve response times a little bit
 }
 
 /**
