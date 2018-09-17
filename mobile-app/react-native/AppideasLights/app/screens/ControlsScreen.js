@@ -160,7 +160,7 @@ export class ControlsScreen extends React.Component {
 	          <Text style={{ paddingTop: 8 }}>R </Text>
 		      <Slider
 		      	  style={{ width: '80%' }}
-		          step={25}
+		          step={10}
 		          minimumValue={0}
 		          maximumValue={100}
 		          onValueChange={ (value) => { this.handleSlide( "first", "red", value ) } }
@@ -173,7 +173,7 @@ export class ControlsScreen extends React.Component {
 	          <Text style={{ paddingTop: 8 }}>G </Text>
 		      <Slider
 		      	  style={{ width: '80%' }}
-		          step={25}
+		          step={10}
 		          minimumValue={0}
 		          maximumValue={100}
 		          onValueChange={ (value) => { this.handleSlide( "first", "green", value ) } }
@@ -186,7 +186,7 @@ export class ControlsScreen extends React.Component {
 	          <Text style={{ paddingTop: 8 }}>B </Text>
 		      <Slider
 		      	  style={{ width: '80%' }}
-		          step={25}
+		          step={10}
 		          minimumValue={0}
 		          maximumValue={100}
 		          onValueChange={ (value) => { this.handleSlide( "first", "blue", value ) } }
@@ -199,7 +199,7 @@ export class ControlsScreen extends React.Component {
 	          <Text style={{ paddingTop: 8 }}>W </Text>
 		      <Slider
 		      	  style={{ width: '80%' }}
-		          step={25}
+		          step={10}
 		          minimumValue={0}
 		          maximumValue={100}
 		          onValueChange={ (value) => { this.handleSlide( "first", "white", value ) } }
@@ -221,7 +221,7 @@ export class ControlsScreen extends React.Component {
 		          <Text style={{ paddingTop: 8 }}>R </Text>
 			      <Slider
 			      	  style={{ width: '80%' }}
-			          step={25}
+			          step={10}
 			          minimumValue={0}
 			          maximumValue={100}
 			          onValueChange={ (value) => { this.handleSlide( "second", "red", value ) } }
@@ -234,7 +234,7 @@ export class ControlsScreen extends React.Component {
 		          <Text style={{ paddingTop: 8 }}>G </Text>
 			      <Slider
 			      	  style={{ width: '80%' }}
-			          step={25}
+			          step={10}
 			          minimumValue={0}
 			          maximumValue={100}
 			          onValueChange={ (value) => { this.handleSlide( "second", "green", value ) } }
@@ -247,7 +247,7 @@ export class ControlsScreen extends React.Component {
 		          <Text style={{ paddingTop: 8 }}>B </Text>
 			      <Slider
 			      	  style={{ width: '80%' }}
-			          step={25}
+			          step={10}
 			          minimumValue={0}
 			          maximumValue={100}
 			          onValueChange={ (value) => { this.handleSlide( "second", "blue", value ) } }
@@ -260,7 +260,7 @@ export class ControlsScreen extends React.Component {
 		          <Text style={{ paddingTop: 8 }}>W </Text>
 			      <Slider
 			      	  style={{ width: '80%' }}
-			          step={25}
+			          step={10}
 			          minimumValue={0}
 			          maximumValue={100}
 			          onValueChange={ (value) => { this.handleSlide( "second", "white", value ) } }

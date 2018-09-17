@@ -516,7 +516,7 @@ void handleControl()
   // parse the incoming request and do the work
   // p = "position" = first|second
   // c = "color" = red|green|blue|white|all
-  // l ="level" = 0|25|50|75|100
+  // l ="level" = 0-100
 
   String lightPosition = server.arg( "p" );
   String lightColor = server.arg( "c" );
@@ -524,28 +524,12 @@ void handleControl()
 
   String requestPosition = "first";
   String requestColor = lightColor;
-  int requestLevel = 1024;
+  float ratio = ((float)lightLevel / (float)100);
+  int requestLevel = ceil( ratio * maxBrightness );
 
   if( lightPosition.equals( "second" ) )
   {
     requestPosition = "second";
-  }
-
-  if( lightLevel < 25 )
-  {
-    requestLevel = 0;
-  }
-  else if( lightLevel == 25 )
-  {
-    requestLevel = 256;
-  }
-  else if( lightLevel == 50 )
-  {
-    requestLevel = 512;
-  }
-  else if( lightLevel == 75 )
-  {
-    requestLevel = 768;
   }
 
   if( requestColor == "all"  )
@@ -929,7 +913,6 @@ const String connectedHtml()
 
 String redirect( String newIP )
 {
-  Serial.println( "NEW IP: " + newIP );
   String returnValue =
     "<!DOCTYPE HTML>"
     "<html>"
