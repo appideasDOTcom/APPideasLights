@@ -4,12 +4,16 @@
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
+#include <EEPROM.h>
 
 /**
  * A sketch to control two strings of RGBW LED lights from one ESP8266.
  * 
  * This creates its own wireless access point with an SSID beginning with "appideas-"
  *   that you need to connect to for configuring this device to connect to your network
+ *   
+ * For complete assembly and usage information, visit this Instructable:
+ * https://www.instructables.com/id/Wifi-Led-Light-Strip-Controller/
  * 
  * @author costmo
  * @since  20180902
@@ -21,6 +25,7 @@ int serverPort = 5050;
 String ssid = "";
 String softIP  = "";
 bool wifiConnected = false;
+const int MAX_WIFI_RETRIES = 60; // The maximum number of times we'll try connecting to WiFi before reverting to AP mode
 
 // Setup NTP parameters for syncing with network time
 const int TIMEZONE_OFFSET = 3600; // Number of seconds in an hour
@@ -94,6 +99,14 @@ int currentMinute = 0;
 int currentSecond = 0;
 int currentMeridiem = 0;
 
+// Values saved to EEPROM for persistent storage of settings
+struct StoredSettings
+  {
+    char ssid[128];
+    char pass[128];
+    int offset = 0;
+  } romSettings;
+
 /**
  * Run on device power-on
  * 
@@ -116,14 +129,49 @@ void setup()
   pinMode( RED_LED_SECOND, OUTPUT );
   pinMode( GREEN_LED_SECOND, OUTPUT );
 
-  // Start the local access point
-  startSoftAP();
+  // uncomment the line below to erase your stored network credentials when the device powers on
+  //wipeSettings();
+  
+  // Check to see if we have stored network credentials already
+  if( !haveNetworkCredentials() )
+  {
+    // Start the local access point
+    wipeSettings();
+    startSoftAP();
+  }
+  else // Attempt to connect to the local network based on stored credentials
+  {
+    StoredSettings deviceSettings = getStoredSettings();
+    connectToWifi( String( deviceSettings.ssid ), String( deviceSettings.pass ) );
+  }
   // Start the web server and get ready to handle incoming requests
   startWebServer();
 
   // turn all the lights on when the ESP first powers on
   turnOn( "first" );
   turnOn( "second" );
+}
+
+/**
+ * Whether or not we have stored network credentials. Will return false of the stored SSID is "appideas-changeme"
+ * 
+ * @return bool
+ * @author costmo
+ * @since  20180929
+ */
+bool haveNetworkCredentials()
+{
+  StoredSettings deviceSettings = getStoredSettings();
+
+  // < 2 to catch empty string
+  if( deviceSettings.ssid == NULL || 
+      (sizeof( deviceSettings.ssid ) < 2 || 
+      String( deviceSettings.ssid ).equals( "appideas-changeme" ) )
+  {
+    return false; 
+  }
+
+  return true;
 }
 
 /**
@@ -234,6 +282,7 @@ void setColorToLevel( String whichPosition, String color, int level )
  */
 void loop() 
 {
+  // Listen for API requests
   server.handleClient();
 }
 
@@ -248,7 +297,6 @@ void loop()
  */
 void handleRoot()
 {
-  //server.send( 200, "text/html", connectionHtml() );
   if( !wifiConnected )
   {
     Serial.println( "Connecting" );
@@ -284,9 +332,10 @@ void handleRollCall()
 }
 
 /**
- * Handler for requests to "/rollcall"
+ * Sends a blank JSON string
  * 
- * This is here so an app can easily scan a network and find nodes
+ * This is used for network interactions in which the requestor is expecting a JSON response, but for the 
+ *   sake of efficiency, we do not want to add extra processing to generate something meaningful
  * 
  * @return void
  * @author costmo
@@ -304,12 +353,11 @@ void sendBlank()
 }
 
 /**
- * Handler for requests to "/connect"
+ * Handler for requests to "/connect" Connects to the local wifi network, establishes an NTP connection and synchronizes the time
  * 
- * This should only take requests to login to the network. It can't do anything by itself
+ * connectToWifi() and getTime() do all the actual work
  * 
- * TODO: Add error checking and re-prompt on unsuccessful connection attempts
- * 
+ * @see connectToWifi
  * @return void
  * @author costmo
  * @since  20180913
@@ -324,6 +372,8 @@ void handleConnect()
   {
     inputTimezoneOffset = tmpInputTimezoneOffset;
   }
+
+  saveSettings( hardSSID, hardPassword, inputTimezoneOffset );
 
   if( !wifiConnected )
   {
@@ -358,7 +408,7 @@ void startSoftAP()
   String mac = WiFi.macAddress();
   String macPartOne = mac.substring( 12, 14 );
   String macPartTwo = mac.substring( 15 );
-  ssid = ssidPrefix + macPartOne + macPartTwo;
+  ssid = ssidPrefix + macPartOne + macPartTwo; // "appideas-" followed by the last 4 characters of the device MAC address
   
   WiFi.softAP( ssid.c_str() );
   softIP = WiFi.softAPIP().toString();
@@ -395,7 +445,7 @@ void handleStatus()
 }
 
 /**
- * Define the endpoints for a tiny API server for receiving and handling requests
+ * Define the endpoints for a tiny API server for receiving and handling requests and start the web server
  * 
  * @return void
  * @author costmo
@@ -421,16 +471,27 @@ void startWebServer()
  */
 void connectToWifi( String wifiSSID, String wifiPassword )
 {
+  int attemptCount = 0;
+  
   Serial.print( "Connecting to " );
   Serial.println( wifiSSID );
-
+  
   WiFi.mode( WIFI_STA );
   WiFi.begin( wifiSSID.c_str(), wifiPassword.c_str() );
 
   while( WiFi.status() != WL_CONNECTED )
   {
-      delay( 500 );
+      delay( 500 ); // delay one-half second between retries
       Serial.print( "." );
+
+      // Reset EEPROM values and go into AP mode if the connection hasn't been established for a period of time. Default: 30 seconds
+      if( attemptCount > MAX_WIFI_RETRIES )
+      {
+        wipeSettings();
+        startSoftAP();
+        return;
+      }
+      attemptCount++;
   }
   Serial.println( "." );
   Serial.println( "Connected" );
@@ -531,6 +592,13 @@ float getRatioForColor( String whichPosition, String color )
   return (float) ((float)currentValue / (float)1024);
 }
 
+/**
+ * Handles API requests to control lights
+ * 
+ * @return void
+ * @author costmo
+ * @since  20180902
+ */
 void handleControl()
 {
   // parse the incoming request and do the work
@@ -932,7 +1000,15 @@ const String connectedHtml()
   return returnValue;
 }
 
-
+/**
+ * Attempt to redirect users after successful attempt to connect to a WiFi network
+ * 
+ * This doesn't currently work since the user is disconnected from the ESP prior to this being an option to be offered
+ * 
+ * @return String
+ * @author costmo
+ * @since  20180902
+ */
 String redirect( String newIP )
 {
   String returnValue =
@@ -948,4 +1024,68 @@ String redirect( String newIP )
     "</html>";
 
   return returnValue;
+}
+
+/**
+ * Stores the input settings to EEPROM
+ * 
+ * @return void
+ * @author costmo
+ * @since  20180929
+ */
+void saveSettings( String ssid, String password, int offset )
+{
+  uint addr = 0;
+
+  strcpy( romSettings.ssid, ssid.c_str() );
+  strcpy( romSettings.pass, password.c_str() );
+  romSettings.offset = offset;
+
+  EEPROM.begin( 512 );
+  EEPROM.put( addr, romSettings );
+  EEPROM.end();
+}
+
+/**
+ * Retrieves stored settings from EEPROM so that WiFi setup does not have to be repeated on every power cycle
+ * 
+ * @return struct
+ * @author costmo
+ * @since  20180929
+ */
+StoredSettings getStoredSettings()
+{
+  uint addr = 0;
+  EEPROM.begin( 512 );
+  EEPROM.get( addr, romSettings );
+  EEPROM.end();
+  return romSettings;
+}
+
+/**
+ * Removes all the input settings from EEPROM
+ * 
+ * The ESP8266 EEPROM wasn't working the same as Arduino for blanking stored values, so we
+ *   set a known "bad" value to make the network credentials be invalid
+ * 
+ * @return void
+ * @author costmo
+ * @since  20180929
+ */
+void wipeSettings()
+{
+  struct StoredSettings
+  {
+    char ssid[128];
+    char pass[128];
+    int offset = 0;
+  } clearSettings;
+
+  strcpy( clearSettings.ssid, "appideas-changeme" );
+  strcpy( clearSettings.pass, "apideas-changeme" );
+
+  uint addr = 0;
+  EEPROM.begin( 512 );
+  EEPROM.put( addr, clearSettings );
+  EEPROM.end();
 }
