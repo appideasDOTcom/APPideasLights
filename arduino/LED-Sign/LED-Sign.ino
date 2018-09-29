@@ -5,6 +5,7 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
+#include <ArduinoOTA.h>
 
 /**
  * A sketch to control two strings of RGBW LED lights from one ESP8266.
@@ -165,7 +166,7 @@ bool haveNetworkCredentials()
 
   // < 2 to catch empty string
   if( deviceSettings.ssid == NULL || 
-      (sizeof( deviceSettings.ssid ) < 2 || 
+      sizeof( deviceSettings.ssid ) < 2 || 
       String( deviceSettings.ssid ).equals( "appideas-changeme" ) )
   {
     return false; 
@@ -284,6 +285,9 @@ void loop()
 {
   // Listen for API requests
   server.handleClient();
+  
+  // Listen for OTA updates
+  ArduinoOTA.handle();
 }
 
 /**
@@ -497,6 +501,9 @@ void connectToWifi( String wifiSSID, String wifiPassword )
   Serial.println( "Connected" );
   wifiConnected = true;
   printWifiStatus();
+  
+  // Get over-the-air updates setup and ready
+  initOta();
 }
 
 /**
@@ -1088,4 +1095,44 @@ void wipeSettings()
   EEPROM.begin( 512 );
   EEPROM.put( addr, clearSettings );
   EEPROM.end();
+}
+
+void initOta()
+{
+  ArduinoOTA.onStart( []() 
+  {
+    String type;
+    if( ArduinoOTA.getCommand() == U_FLASH )
+    {
+      type = "sketch";
+    }
+    else // U_SPIFFS
+    {
+      type = "filesystem";
+    }
+
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println( "Start updating " + type );
+  });
+  
+  ArduinoOTA.onEnd( []() 
+  {
+    Serial.println( "\nEnd" );
+  });
+  
+  ArduinoOTA.onProgress( [](unsigned int progress, unsigned int total ) 
+  {
+    Serial.printf( "Progress: %u%%\r", (progress / (total / 100)) );
+  });
+  
+  ArduinoOTA.onError( []( ota_error_t error ) 
+  {
+    Serial.printf( "Error[%u]: ", error );
+    if( error == OTA_AUTH_ERROR) { Serial.println( "Auth Failed" ); }
+    else if(error == OTA_BEGIN_ERROR) { Serial.println("Begin Failed"); }
+    else if(error == OTA_CONNECT_ERROR) { Serial.println("Connect Failed"); }
+    else if(error == OTA_RECEIVE_ERROR) { Serial.println("Receive Failed"); }
+    else if(error == OTA_END_ERROR) { Serial.println("End Failed"); }
+  });
+  ArduinoOTA.begin();
 }
