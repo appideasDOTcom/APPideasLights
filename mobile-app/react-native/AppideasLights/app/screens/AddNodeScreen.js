@@ -1,6 +1,12 @@
 import React, {Component} from 'react';
 import {Button, Text, View} from 'react-native';
 
+/**
+ * Screen with the buttons for selecting the option by which the controller should be added
+ * 
+ * @author costmo
+ * @since 20180825
+ */
 export class AddNodeScreen extends React.Component {
 	
 	static navigationOptions = {

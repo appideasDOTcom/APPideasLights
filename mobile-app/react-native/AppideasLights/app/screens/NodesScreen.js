@@ -10,8 +10,21 @@ handledItemCount = false;
 savedItemCount = 0;
 nodeArray = [];
 
+/**
+ * Screen for displaying all controllers
+ * 
+ * @author costmo
+ * @since 20180825
+ */
 export class NodesScreen extends React.Component {
 
+	/**
+	 * Class constructor
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @param object	props	Application properties
+	 */
 	constructor( props ) 
 	{
 		super( props );
@@ -21,6 +34,13 @@ export class NodesScreen extends React.Component {
 		nav = props.navigation;
 	}
 	
+	/**
+	 * Set an internal state when there is data to show
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	changeView()
 	{
 	     this.setState(
@@ -41,6 +61,13 @@ export class NodesScreen extends React.Component {
 	        ),
 		};
 		
+		/**
+		 * Gets the count of saved items and set the appropriate member
+		 * 
+		 * @author costmo
+		 * @since 20180825
+		 * @return void
+		 */
 		updateSavedItemCount()
 		{
 			savedItemCount = 0;
@@ -70,11 +97,13 @@ export class NodesScreen extends React.Component {
 			this.finalizeSavedItemCount();
 		} // updateSavedItemCount()()
 
-		makeGrid( itemCount )
-		{
-				
-		}
-
+		/**
+		 * Change the view state when all promises have been fulfilled and we have the item count
+		 * 
+		 * @author costmo
+		 * @since 20180825
+		 * @return void
+		 */
 		finalizeSavedItemCount()
 		{
 			if( !handledItemCount )
@@ -104,6 +133,13 @@ export class NodesScreen extends React.Component {
 	  } // render()
 }
 
+	/**
+	 * Render class for when there are controllers to show
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 export default class AvailableNodes extends Component
 {
 	constructor( props )

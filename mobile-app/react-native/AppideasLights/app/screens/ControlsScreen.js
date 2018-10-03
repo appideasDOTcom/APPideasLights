@@ -5,6 +5,13 @@ var ipAddr = "";
 nav = "";
 var incomingData = new Array();
 
+/**
+ * Main screen to control lights
+ * 
+ * @author costmo
+ * @since 20180825
+ * @return void
+ */
 export class ControlsScreen extends React.Component {
 	
 	constructor( props )
@@ -53,6 +60,14 @@ export class ControlsScreen extends React.Component {
 	        ),
 	  };
 	
+	/**
+	 * Handle user toggling lights on/off
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param string	whichSet	Which light set to affect - first|second
+	 */
 	handleToggle( whichSet )
 	{
 		var args = "p=" + whichSet;
@@ -91,6 +106,16 @@ export class ControlsScreen extends React.Component {
 		this.sendCommand( "control", args );
 	}
 	
+	/**
+	 * Handle the user sliding the brightness controls
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param string	section	first|second
+	 * @param string	color	red|green|blue|white
+	 * @param string	value	1 - 100
+	 */
 	handleSlide( section, color, value )
 	{
 		var args = "p=" + section;
@@ -144,6 +169,13 @@ export class ControlsScreen extends React.Component {
 		}
 	}
 	
+	/**
+	 * Render the screen
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	  render() {
 		  
 	    return (

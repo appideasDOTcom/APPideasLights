@@ -11,6 +11,12 @@ nav = "";
 var saveIP = "";
 var saveName = "";
 
+/**
+ * Screen for configuring a controller
+ * 
+ * @author costmo
+ * @since 20180825
+ */
 export class ConfigScreen extends React.Component {
 	
 	static navigationOptions = {
@@ -18,6 +24,14 @@ export class ConfigScreen extends React.Component {
 	    headerBackTitle: 'Back',
 	  };
 	
+	/**
+	 * Class constructor
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param object	props	Application properties
+	 */
 	constructor( props )
 	{
 		super( props );
@@ -33,6 +47,13 @@ export class ConfigScreen extends React.Component {
 		};
 	}
 	
+	/**
+	 * Give an "Are you sure?" dialog before deleting
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	alertForDelete()
 	{
 		Alert.alert(
@@ -48,6 +69,13 @@ export class ConfigScreen extends React.Component {
 		);
 	}
 	
+	/**
+	 * Performs the deletion of the current controller
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	deleteDataItem()
 	{
 		const classState = this.state;
@@ -94,6 +122,15 @@ export class ConfigScreen extends React.Component {
 		this.props.navigation.dispatch( resetNavStack );
 	}
 	
+	/**
+	 * Updates the state values that represent the controller's data values
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param string	which	Which field to save input for
+	 * @param string	value	The input value to save
+	 */
 	updateDataItem( which, value )
 	{
 		if( "ip" == which )
@@ -106,6 +143,13 @@ export class ConfigScreen extends React.Component {
 		}
 	}
 	
+	/**
+	 * Save user input to the database
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	saveInput()
 	{
 		if( this.state.dataIP.length < 1 || this.state.dataNiceName.length < 1 )
@@ -150,6 +194,13 @@ export class ConfigScreen extends React.Component {
 		
 	}
 	
+	/**
+	 * Render the screen
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 */
 	  render() {
 	    return (
 	      <View style={{ flex: 1, backgroundColor: '#D3E3F1', paddingTop: 50, paddingLeft: 20 }}>

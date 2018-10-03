@@ -8,6 +8,15 @@ import {Schema_Controller, Schema_Light} from '../schema/SchemaObjects';
 
 nodeArray = [];
 
+/**
+ * App splash screen
+ * 
+ * @author costmo
+ * @since 20180825
+ * @return void
+ * @param string	text	The input to save
+ */
+
 export class HomeScreen extends React.Component {
 	
 	constructor( props )
@@ -24,6 +33,7 @@ export class HomeScreen extends React.Component {
 	  {
 		const { navigate } = this.props.navigation;
 
+		// get the list of controllers to pass to the next screen
 		Realm.open( { schema: [Schema_Controller, Schema_Light] } )
 		.then(
 			function( realm )
@@ -57,7 +67,7 @@ export class HomeScreen extends React.Component {
 					  {
 						  navigate( 'Connect' );
 					  }
-					  else
+					  else // we're not on the ESP/private network, so go to the controllers screen
 					  {
 						  navigate( 'Nodes', 
 							{
@@ -66,6 +76,7 @@ export class HomeScreen extends React.Component {
 					  }
 				  });							
 		  
+		// show something while the user is waiting
 		    return (
 			      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50 }}>
 			        <Text>Getting things started...</Text>

@@ -1,6 +1,12 @@
 import React, {Component} from 'react';
 import {Button, Text, View, TextInput} from 'react-native';
 
+/**
+ * Screen for adding a controller by scanning the local network. Not yet implemented.
+ * 
+ * @author costmo
+ * @since 20180825
+ */
 export class AddByScanScreen extends React.Component {
 	
 	static navigationOptions = {

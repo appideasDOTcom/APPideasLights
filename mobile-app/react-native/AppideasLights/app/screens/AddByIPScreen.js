@@ -5,6 +5,12 @@ import {StackActions, NavigationActions} from 'react-navigation';
 import Realm from 'realm';
 import {Schema_Controller, Schema_Light} from '../schema/SchemaObjects';
 
+/**
+ * Screen for adding a controller by IP address
+ * 
+ * @author costmo
+ * @since 20180825
+ */
 export class AddByIPScreen extends React.Component {
 	
 	static navigationOptions = {
@@ -12,6 +18,14 @@ export class AddByIPScreen extends React.Component {
 	    headerBackTitle: 'Back',
 	  };
 	
+	/**
+	 * Save user input
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param string	text	The input to save
+	 */
 	saveInput( text )
 	{
 		var maxPosition = 0;
@@ -57,6 +71,14 @@ export class AddByIPScreen extends React.Component {
 		this.props.navigation.dispatch( resetNavStack );
 	}
 	
+	/**
+	 * Render the screen
+	 * 
+	 * @author costmo
+	 * @since 20180825
+	 * @return void
+	 * @param string	text	The input to save
+	 */
 	  render() {
 	    return (
 	      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 50 }}>
