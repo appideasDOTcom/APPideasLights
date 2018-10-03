@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {Button, Text, View, TextInput, ScrollView, TouchableOpacity, Alert} from 'react-native';
-import store from 'react-native-simple-store';
 import {StackActions, NavigationActions} from 'react-navigation';
+
+import Realm from 'realm';
+import {Schema_Controller, Schema_Light} from '../schema/SchemaObjects';
 
 var incomingData = new Array();
 nav = "";
@@ -22,7 +24,13 @@ export class ConfigScreen extends React.Component {
 		incomingData = this.props.navigation.getParam( "itemData", new Array() );
 		nav = props.navigation;
 		
-		this.state = { dataIP: incomingData.ipAddr, dataName: incomingData.name, dataNiceName: incomingData.niceName };
+		this.state = { 
+				dataPosition: incomingData.position, 
+				dataIP: incomingData.ipAddr, 
+				dataNiceName: incomingData.niceName,
+				dataStrip1Id: incomingData.strip1Id,
+				dataStrip2Id: incomingData.strip2Id,
+		};
 	}
 	
 	alertForDelete()
@@ -42,7 +50,42 @@ export class ConfigScreen extends React.Component {
 	
 	deleteDataItem()
 	{
-		store.delete( incomingData.name );
+		const classState = this.state;
+		
+		Realm.open( { schema: [Schema_Controller, Schema_Light] } )
+		.then(
+			function( realm )
+			{
+				// remove connectged lights
+				var filter = 'id = ' + classState.dataStrip1Id + ' OR id = ' + classState.dataStrip2Id;
+				let removeLights = realm.objects( 'Light' ).filtered( 'id = ' + classState.dataStrip1Id + ' OR id = ' + classState.dataStrip2Id  );
+				realm.beginTransaction();
+				for( let i = 0; i < removeLights.length; i++ )
+				{
+					let currentLight = removeLights[i];
+					realm.delete( currentLight );
+				}
+				realm.commitTransaction();
+				
+				// delete the controller
+				var positionString = "position = " + classState.dataPosition;
+				let removeControllers = realm.objects( 'Controller' ).filtered( positionString );
+				realm.beginTransaction();
+				for( let i = 0; i < removeControllers.length; i++ )
+				{
+					let currentController = removeControllers[i];
+					realm.delete( currentController );
+				}
+				realm.commitTransaction();
+				
+			}
+		).catch(
+			function( e )
+			{
+				console.log( e );
+			}
+		);
+		
 		const resetNavStack = StackActions.reset({
 		    index: 0,
 		    actions: [
@@ -71,13 +114,37 @@ export class ConfigScreen extends React.Component {
 		}
 		else
 		{
-			store.update( this.state.dataName, 
-					{ 
-						ipAddr: this.state.dataIP,
-						name: this.state.dataName,
-						niceName: this.state.dataNiceName,
+			const classState = this.state;
+			
+			Realm.open( { schema: [Schema_Controller, Schema_Light] } )
+			.then(
+				function( realm )
+				{
+					var positionString = "position = " + classState.dataPosition;
+					let saveControllers = realm.objects( 'Controller' ).filtered( positionString );
+					
+					for( let i = 0; i < saveControllers.length; i++ )
+					{
+						let currentController = saveControllers[i];
+						
+						realm.write(
+						() =>
+						{
+							currentController.niceName = classState.dataNiceName;
+							currentController.ipAddr = classState.dataIP;
+						});
 					}
+					
+					
+				}
+			).catch(
+				function( e )
+				{
+					console.log( e );
+				}
 			);
+			
+			
 			this.props.navigation.goBack();
 		}
 		

@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {Button, Text, View, TextInput} from 'react-native';
-import store from 'react-native-simple-store';
 import {StackActions, NavigationActions} from 'react-navigation';
+
+import Realm from 'realm';
+import {Schema_Controller, Schema_Light} from '../schema/SchemaObjects';
 
 export class AddByIPScreen extends React.Component {
 	
@@ -12,13 +14,41 @@ export class AddByIPScreen extends React.Component {
 	
 	saveInput( text )
 	{
-		store.update( 'controller_0', 
-				{ 
-					ipAddr: text,
-					name: 'controller_0',
-					niceName: text,
+		var maxPosition = 0;
+		
+		Realm.open( { schema: [Schema_Controller, Schema_Light] } )
+		.then(
+			realm =>
+			{
+				let savedControllers = realm.objects( 'Controller' ).sorted( 'position', true );
+				currentController = savedControllers[0];
+				
+				if( currentController != null )
+				{
+					maxPosition = currentController.position;
 				}
+				nextPosition = maxPosition + 1;
+				
+				realm.write(
+ 				() =>
+ 				{
+ 					realm.create( 'Controller',
+ 					{
+ 						position: nextPosition,
+ 						ipAddr: text,
+ 						niceName: text,
+ 					});
+ 				});
+				
+			}
+		).catch(
+			function( e )
+			{
+				console.log( e );
+			}
 		);
+		
+		
 		const resetNavStack = StackActions.reset({
 		    index: 0,
 		    actions: [

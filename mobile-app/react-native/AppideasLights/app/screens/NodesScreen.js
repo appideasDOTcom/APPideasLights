@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {Button, Text, View} from 'react-native';
-import store from 'react-native-simple-store';
 import GridView from 'react-native-super-grid';
+
+import Realm from 'realm';
+import {Schema_Controller, Schema_Light} from '../schema/SchemaObjects';
 
 nav = "";
 handledItemCount = false;
@@ -43,38 +45,29 @@ export class NodesScreen extends React.Component {
 		{
 			savedItemCount = 0;
 
-			for( var i = 0; i < 16; i++ )
+			Realm.open( { schema: [Schema_Controller, Schema_Light] } )
+			.then(
+				function( realm )
+				{
+					let savedControllers = realm.objects( 'Controller' );
+					savedItemCount = savedControllers.length;
+				}
+			).catch(
+				function( e )
+				{
+					console.log( e );
+				}
+			);
+
+			if( savedItemCount > 0 )
 			{
-				var controllerName = "controller_" + i;
+				this.setState(
+				{
+					blankView: false
+				});
+			}
 
-				store.get( controllerName )
-				.then(
-					(res) =>
-						{
-							try
-							{
-									var incomingIP = res.ipAddr;
-
-									if( incomingIP.length > 0 )
-									{
-										savedItemCount++;
-										this.setState( blankView: false );
-									}
-									if( i >= 15 )
-									{
-										this.finalizeSavedItemCount();
-									}
-							}
-							catch( e )
-							{
-								if( i >= 15 )
-								{
-									this.finalizeSavedItemCount();
-								}
-							} // catch
-						} // (res) function
-				); // then
-			} // for
+			this.finalizeSavedItemCount();
 		} // updateSavedItemCount()()
 
 		makeGrid( itemCount )
@@ -97,7 +90,7 @@ export class NodesScreen extends React.Component {
 	
 	  render() {
 
-			if( !this.state.blankView )
+			if( nodeArray.length > 0 )
 		  	{
 			  return <AvailableNodes changeView = { () => this.changeView() } />
 			}
@@ -128,7 +121,7 @@ export default class AvailableNodes extends Component
 					renderItem = {item => (
 						<View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff', paddingTop: 20, paddingBottom: 20, borderColor: 'gray', borderWidth: 1 }}>
 							<Button style={{ flex:1, assignSelf: 'stretch', width:'100%', height:'100%', backgroundColor: '#fff' }}
-								title={ item.niceName }
+								title= { item.niceName }
 								onPress={ () => nav.navigate( 'Control', 
 									{
 										itemData: item
