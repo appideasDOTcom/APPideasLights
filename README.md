@@ -13,3 +13,5 @@ Check back for the Instructable URL then. I'm not providing more information abo
 In the meantime, check out this Instructable about making custom PCBs on a CNC router.
 https://www.instructables.com/id/Custom-PCBs-on-a-CNC-Router/
 If you have a CNC router this will come in handy for making a customer WiFi constroller.
+
+NOTE: Create documentation to list the possible API calls to the ESP
