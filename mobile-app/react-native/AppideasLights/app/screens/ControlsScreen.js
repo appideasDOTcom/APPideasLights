@@ -1,9 +1,11 @@
 import React, {Component} from 'react';
-import {Button, Text, View, Switch, Slider, ScrollView} from 'react-native';
+import {Button, Text, View, Switch, Slider, ScrollView, Alert} from 'react-native';
 
 var ipAddr = "";
 nav = "";
 var incomingData = new Array();
+
+var lastAlert = 0;
 
 /**
  * Main screen to control lights
@@ -312,20 +314,37 @@ export class ControlsScreen extends React.Component {
 		    .then(
 		    		(response) => 
 		    		{
-//		    			var jsonString = JSON.stringify( response );
-//		    			var json = JSON.parse( jsonString );
-//		    			var bodyJsonString = JSON.stringify( json._bodyInit );
-//		    			var bodyJson = JSON.parse( json._bodyInit );
-//
-//		    			return( bodyJson );
 		    			response.json();
 		    		})
 		    .then((responseJson) => {
 		      return responseJson;
 		    })
 		    .catch((error) => {
-		      console.error(error);
+		    	
+		    	// only show errors/alerts once every 60 seconds. Dragging a control may show many alerts otherwise.
+		    	var timeDiff = (Date.now() - lastAlert);
+		    	if( timeDiff < (60 * 1000) )
+		    	{
+		    		return;
+		    	}
+		    	else
+		    	{
+		    	
+			    	lastAlert = Date.now();
+			    	
+			    	Alert.alert(
+		    			'NETWORK ERROR',
+		    			'I have encountered a network error. Make sure that your device and the lights are connected to the same WiFi network and that the IP address of the controller is correct. Error: ' + error,
+		    			[
+		    				{ text: 'OK', onPress: () => { /* Just dismiss */ } }
+		    			],
+		    			{
+		    				cancelable: true
+		    			}
+		    		);
+		    	}
 		    });
+		    
 	  }
 	  
 }
