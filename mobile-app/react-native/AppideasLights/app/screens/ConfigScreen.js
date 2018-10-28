@@ -189,7 +189,13 @@ export class ConfigScreen extends React.Component {
 			);
 			
 			
-			this.props.navigation.goBack();
+			//this.props.navigation.goBack();
+			const resetNavStack = StackActions.reset({
+			    index: 0,
+			    actions: [
+			      NavigationActions.navigate({ routeName: 'Home' })
+			    ] })
+			this.props.navigation.dispatch( resetNavStack );
 		}
 		
 	}

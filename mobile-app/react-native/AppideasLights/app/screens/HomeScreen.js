@@ -32,6 +32,8 @@ export class HomeScreen extends React.Component {
 	  render() 
 	  {
 		const { navigate } = this.props.navigation;
+		
+		nodeArray = [];
 
 		// get the list of controllers to pass to the next screen
 		Realm.open( { schema: [Schema_Controller, Schema_Light] } )
