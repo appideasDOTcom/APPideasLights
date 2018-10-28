@@ -1,7 +1,8 @@
-package com.appideaslights;
+package com.appideas.appideaslights;
 
 import android.app.Application;
 
+import com.appideas.appideaslights.BuildConfig;
 import com.facebook.react.ReactApplication;
 import io.realm.react.RealmReactPackage;
 import com.pusherman.networkinfo.RNNetworkInfoPackage;

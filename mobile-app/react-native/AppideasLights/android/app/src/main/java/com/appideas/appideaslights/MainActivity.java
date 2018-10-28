@@ -1,4 +1,4 @@
-package com.appideaslights;
+package com.appideas.appideaslights;
 
 import com.facebook.react.ReactActivity;
 
