@@ -4,26 +4,6 @@ The Arduino directory contains code to be uploaded to an ESP8266-12E development
 
 The mobile-app directory has a React Native project, which produced native code for both Android and iOS.
 
-Installation instructions will be available at Instructables.com once the write-up is done (early November).
-
-The ESP8266 controller will respond to http requests to the following endpoints:
-```
-/ - Displays either the screen that allows you to provide WiFi credentials or a notice that you are already connected
-/connect - This only accepts POST data from the root node. Nothing useful will be gained by accessing it directly
-/network-status - Get the device's network info in a JSON-encoded string
-/status - Get the status of each set of lights in a JSON-encoded string
-/rollcall - Verify that the device is responding in a known manner
-/control - Control a set of lights. Possible GET parameters are: 
-p: 'position' Accepts 'first' or 'second'
-c: 'color' Accepts 'red' 'green' 'blue' 'white' or 'all'
-l: 'level' Accepts any integer between 0 (off) and 100 (100% power)
-```
-
-Here's an example call to the controller:
-```
-http://10.0.42.241:5050/control?p=first&c=red&l=100
-```
-
 ## Installation
 
 **Clone the repository (everyone):**
@@ -51,6 +31,24 @@ If compiling or installation fails, run the second command again. This is normal
 
 **Install the app for Android:**
 
+
+The ESP8266 controller will respond to http requests to the following endpoints:
+```
+/ - Displays either the screen that allows you to provide WiFi credentials or a notice that you are already connected
+/connect - This only accepts POST data from the root node. Nothing useful will be gained by accessing it directly
+/network-status - Get the device's network info in a JSON-encoded string
+/status - Get the status of each set of lights in a JSON-encoded string
+/rollcall - Verify that the device is responding in a known manner
+/control - Control a set of lights. Possible GET parameters are: 
+p: 'position' Accepts 'first' or 'second'
+c: 'color' Accepts 'red' 'green' 'blue' 'white' or 'all'
+l: 'level' Accepts any integer between 0 (off) and 100 (100% power)
+```
+
+Here's an example call to the controller:
+```
+http://10.0.42.241:5050/control?p=first&c=red&l=100
+```
 
 If you use the app, you have no reason to know or remember the endpoints or their inputs - that's all handled by the app.
 
