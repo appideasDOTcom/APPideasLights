@@ -4,6 +4,8 @@ import {Button, Text, View} from 'react-native';
 /**
  * Screen with the buttons for selecting the option by which the controller should be added
  * 
+ * TODO: Add a button that leads to the AddByScann screen and implement finding controllers by scanning the network
+ * 
  * @author costmo
  * @since 20180825
  */
@@ -23,10 +25,6 @@ export class AddNodeScreen extends React.Component {
 	          onPress={() => this.props.navigation.navigate( 'AddByIP' )}
 	        />
 	        <Text>{"\n"}</Text>
-	        <Button
-	          title="Scan network"
-	          onPress={() =>  this.props.navigation.navigate( 'AddByScan' )}
-	        />
 	      </View>
 	    );
 	  }

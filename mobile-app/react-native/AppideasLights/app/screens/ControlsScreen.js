@@ -354,7 +354,7 @@ export class ControlsScreen extends React.Component {
 		    				var bValue = ceil( firstRatios[2] * 100 );
 		    				var wValue = ceil( firstRatios[3] * 100 );
 		    				
-		    				if( rValue > 0 && gValue > 0 && bValue > 0 && wValue > 0 )
+		    				if( rValue > 0 || gValue > 0 || bValue > 0 || wValue > 0 )
 	    					{
 		    					this.setState( { lightsOn1: true } );
 	    					}
@@ -376,7 +376,7 @@ export class ControlsScreen extends React.Component {
 		    				var bValue = ceil( secondRatios[2] * 100 );
 		    				var wValue = ceil( secondRatios[3] * 100 );
 		    				
-		    				if( rValue > 0 && gValue > 0 && bValue > 0 && wValue > 0 )
+		    				if( rValue > 0 || gValue > 0 || bValue > 0 || wValue > 0 )
 	    					{
 		    					this.setState( { lightsOn2: true } );
 	    					}
