@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {Button, Text, View, Switch, Slider, ScrollView, Alert} from 'react-native';
 
+var ceil = require( 'math-ceil' );
+
 var ipAddr = "";
 nav = "";
 var incomingData = new Array();
@@ -172,6 +174,18 @@ export class ControlsScreen extends React.Component {
 	}
 	
 	/**
+	 * Set the default slider and switch values after the interface components have mounted
+	 * 
+	 * @author costmo
+	 * @since 20181028
+	 * @return void
+	 */
+	componentDidMount()
+	{
+		this.setSliderValues();
+	}
+	
+	/**
 	 * Render the screen
 	 * 
 	 * @author costmo
@@ -179,7 +193,7 @@ export class ControlsScreen extends React.Component {
 	 * @return void
 	 */
 	  render() {
-		  
+
 	    return (
 	      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#D3E3F1', paddingTop: 20 }}>
 	      <ScrollView contentContainerStyle={{flexGrow: 1 }}>
@@ -305,6 +319,86 @@ export class ControlsScreen extends React.Component {
 		  </ScrollView>
 	      </View>
 	    );
+	  }
+	  
+	  /**
+		 * Set the default slider and switch values by querying the ESP device
+		 * 
+		 * @author costmo
+		 * @since 20181028
+		 * @return void
+		 */
+	  setSliderValues()
+	  {
+		  var url = "http://" + ipAddr + ":5050/status";
+		  fetch( url )
+		    .then(
+		    		(response) => 
+		    		{
+		    			return response.text();
+		    		})
+		    .then( 
+		    		(responseText) => 
+		    		{
+		    	
+		    			//var bodyJsonString = JSON.stringify( responseJson._bodyInit );
+		    			var bodyJson = JSON.parse( responseText );
+  			
+		    			var firstRatios = bodyJson.firstratios;
+		    			var secondRatios = bodyJson.secondratios;
+		    			
+		    			if( firstRatios != undefined )
+	    				{
+		    				var rValue = ceil( firstRatios[0] * 100 );
+		    				var gValue = ceil( firstRatios[1] * 100 );
+		    				var bValue = ceil( firstRatios[2] * 100 );
+		    				var wValue = ceil( firstRatios[3] * 100 );
+		    				
+		    				if( rValue > 0 && gValue > 0 && bValue > 0 && wValue > 0 )
+	    					{
+		    					this.setState( { lightsOn1: true } );
+	    					}
+		    				else
+	    					{
+		    					this.setState( { lightsOn1: false } );
+	    					}
+		    				
+		    				this.setState( { rValue1: rValue } );
+		    				this.setState( { gValue1: gValue } );
+		    				this.setState( { bValue1: bValue } );
+		    				this.setState( { wValue1: wValue } );
+	    				}
+		    			
+		    			if( secondRatios != undefined )
+	    				{
+		    				var rValue = ceil( secondRatios[0] * 100 );
+		    				var gValue = ceil( secondRatios[1] * 100 );
+		    				var bValue = ceil( secondRatios[2] * 100 );
+		    				var wValue = ceil( secondRatios[3] * 100 );
+		    				
+		    				if( rValue > 0 && gValue > 0 && bValue > 0 && wValue > 0 )
+	    					{
+		    					this.setState( { lightsOn2: true } );
+	    					}
+		    				else
+	    					{
+		    					this.setState( { lightsOn2: false } );
+	    					}
+		    				
+		    				this.setState( { rValue2: rValue } );
+		    				this.setState( { gValue2: gValue } );
+		    				this.setState( { bValue2: bValue } );
+		    				this.setState( { wValue2: wValue } );
+	    				}
+		    	
+		    			return bodyJson;
+		    		})
+		    .catch(
+		    		(error) => 
+				    {
+				    	
+				    	console.log( "ERROR SETTING CONTROL STATE: " + error );
+				    });
 	  }
 	  
 	  sendCommand( path, args )

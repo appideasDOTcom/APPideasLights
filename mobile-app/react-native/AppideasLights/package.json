@@ -7,6 +7,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "math-ceil": "^1.0.0",
     "react": "16.5.0",
     "react-native": "0.57.0",
     "react-native-elements": "^0.19.1",
