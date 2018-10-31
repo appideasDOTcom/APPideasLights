@@ -42,6 +42,7 @@
 		9DB0B805EB764802AACFCA86 /* libRNNetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F37291FD733C4B43B164F9DE /* libRNNetworkInfo.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		B6AA0713817A41DDA196DDAC /* libRealmReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 64553E1A7A6A4DC0B9529F74 /* libRealmReact.a */; };
+		DED4084C218A28E300BE6692 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1131,6 +1132,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DED4084C218A28E300BE6692 /* main.jsbundle in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
