@@ -68,3 +68,7 @@ If you're here before the Instructable is published, check out this Instructable
 https://www.instructables.com/id/Custom-PCBs-on-a-CNC-Router/
 
 If you have a CNC router this will come in handy for making a custom WiFi constroller.
+
+## License
+
+This software is available under a GPLv3 license. A copy of the license is in resources/gpl/
