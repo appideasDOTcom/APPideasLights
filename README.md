@@ -1,7 +1,7 @@
 This is code that was written to accompany a custom-built WiFi controller for 5050SMD LED light strips. The Instructable that shows you how to build the hardware is here:
 https://www.instructables.com/id/Wifi-Led-Light-Strip-Controller/
 
-The Arduino directory contains code to be uploaded to an ESP8266-12E development board.
+The Arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the Instructable link above.
 
 The mobile-app directory has a React Native project, which produced native code for both Android and iOS.
 
@@ -33,6 +33,11 @@ react-native run-android
 ```
 If compiling or installation fails, run the last command again. This is expected behavior for a first build in React Native
 
+## Using the mobile app
+
+If your controller has not been configured to connect to your network, go into your device's WiFi settings and connect to the access point that is created by the ESP. It will begin with "appideas-" After connecting to the access point, open the app. Alternatively, open a web browser and go to http://192.168.4.1:5050/ Supply your network credentials and click CONNECT. Connect your mobile device to your network again, then close and re-open the app. Tap "+" to add a controller by IP address. Once the controller is added, the main screen of the app will have a button showing its IP address. Tap the button to see the controls. To change the name of the controller or to update the IP address, tap the Config button.
+
+## Controlling lights from a web browser
 
 The ESP8266 controller will respond to http requests to the following endpoints:
 ```
@@ -51,6 +56,8 @@ Here's an example call to the controller:
 ```
 http://10.0.42.241:5050/control?p=first&c=red&l=100
 ```
+
+## Misc
 
 I have written a crap-ton of mobile apps, but this is my first in React Native. It is functional, but not written with best practices. A majority of the items on the Issues list are related to that fact. If you are an experienced React Native developer and wouldn't mind offering a few hours to refactor this code before the codebase grows to be large, that would be awesome. Issue #1 is the core of it all.
 
