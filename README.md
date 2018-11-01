@@ -5,7 +5,7 @@ The Arduino directory contains code to be uploaded to an ESP8266-12E development
 
 The mobile-app directory has a React Native project, which produced native code for both Android and iOS.
 
-## Installation
+## Mobile app installation
 **If you have an Android device**
 The easiest way to install the app is through the Play Store. You can get it here:
 https://play.google.com/store/apps/details?id=com.appideas.appideaslights
