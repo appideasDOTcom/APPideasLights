@@ -1,9 +1,11 @@
 This is code that was written to accompany a custom-built WiFi controller for 5050SMD LED light strips. The Instructable that shows you how to build the hardware is here:
 https://www.instructables.com/id/Wifi-Led-Light-Strip-Controller/
 
-The Instructable will be public on or near Nov. 1st. I'm waiting for November contests to be announced.
+The Instructable will be public in early November. I'm waiting for November contests to be announced.
 
-The Arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the Instructable link above.
+The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the Instructable link above.
+
+The resources directory contains the license file, files for CNC routers and 3D printers, and Fritzing documents. V9 of the CNC and 3D printer files are currently untested, but have better traces and pads than the V8 files.
 
 The mobile-app directory has a React Native project, which produced native code for both Android and iOS.
 
