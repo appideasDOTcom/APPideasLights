@@ -1,5 +1,5 @@
 This is code that was written to accompany a custom-built WiFi controller for 5050SMD LED light strips. The Instructable that shows you how to build the hardware is here:
-https://www.instructables.com/id/Wifi-Led-Light-Strip-Controller/
+https://www.instructables.com/id/WiFi-LED-Light-Strip-Controller/
 
 The Instructable will be public in early November. I'm waiting for November contests to be announced.
 
