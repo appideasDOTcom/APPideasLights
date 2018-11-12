@@ -61,7 +61,7 @@ http://10.0.42.241:5050/control?p=first&c=red&l=100
 
 I have written a crap-ton of mobile apps, but this is my first in React Native. It is functional, but not written with best practices. A majority of the items on the Issues list are related to that fact. If you are an experienced React Native developer and wouldn't mind offering a few hours to refactor this code before the codebase grows to be large, that would be awesome. Issue #1 is the core of it all.
 
-Check out this part 1 of this Instructable series, about making custom PCBs on a CNC router:
+Check out part 1 of this Instructable series. It's about making custom PCBs on a CNC router:
 
 https://www.instructables.com/id/Custom-PCBs-on-a-CNC-Router/
 
