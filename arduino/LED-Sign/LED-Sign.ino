@@ -463,6 +463,8 @@ void startWebServer()
   server.on( "/status", handleStatus );
   server.on( "/control", handleControl );
   server.on( "/rollcall", handleRollCall );
+  server.on( "/multiset", handleMultiset );
+  server.on( "/pattern", handlePattern );
   server.begin();
 }
 
@@ -600,7 +602,110 @@ float getRatioForColor( String whichPosition, String color )
 }
 
 /**
+ * Handles API requests to set all lights to specific levels with one network request. This can reduce the number of network requests considerably.
+ * 
+ * Accepted input parameters from GET are:
+ *   p = "position" = first|second|all
+ *   c = "color" = A string with four comma separated integers between 0 and 100, representing RGBW intensity. 
+ *                 If your lights do not have a W, send any value, but do not leave the fourth number blank. For example:
+ *                   c=100,0,0,0   (red)
+ *                   c=100,0,100,0 (purple)
+ *                   c=100,30,0,0  (orange)
+ * 
+ * @return void
+ * @author costmo
+ * @since  20181113
+ */
+void handleMultiset()
+{
+  bool requestAllPositions = false;
+  // set the position to change
+  String lightPosition = server.arg( "p" );
+  String requestPosition = "first";
+  if( lightPosition.equals( "second" ) )
+  {
+    requestPosition = "second";
+  }
+  else if( lightPosition.equals( "all" ) )
+  {
+    requestAllPositions = true;
+  }
+
+  String colorDefinition = server.arg( "c" );
+
+  int newRed = 100;
+  int newGreen = 100;
+  int newBlue = 100;
+  int newWhite = 100;
+
+  // split the input on commas
+  char *strtokIndx;
+  
+  strtokIndx = strtok( (char *)colorDefinition.c_str(), "," );
+  newRed = atoi( strtokIndx );
+  float ratio = ((float)newRed / (float)100);
+  newRed = ceil( ratio * maxBrightness );
+  
+  strtokIndx = strtok( NULL, "," );
+  newGreen = atoi( strtokIndx );
+  ratio = ((float)newGreen / (float)100);
+  newGreen = ceil( ratio * maxBrightness );
+  
+  strtokIndx = strtok( NULL, "," );
+  newBlue = atoi( strtokIndx );
+  ratio = ((float)newBlue / (float)100);
+  newBlue = ceil( ratio * maxBrightness );
+  
+  strtokIndx = strtok( NULL, "," );
+  newWhite = atoi( strtokIndx );
+  ratio = ((float)newWhite / (float)100);
+  newWhite = ceil( ratio * maxBrightness );
+
+  if( requestAllPositions )
+  {
+    setColorToLevel( "first", "red", newRed  );
+    setColorToLevel( "second", "red", newRed );
+
+    setColorToLevel( "first", "green", newGreen );
+    setColorToLevel( "second", "green", newGreen );
+
+    setColorToLevel( "first", "blue", newBlue );
+    setColorToLevel( "second", "blue", newBlue );
+
+    setColorToLevel( "first", "white", newWhite );
+    setColorToLevel( "second", "white", newWhite );
+  }
+  else
+  {
+    setColorToLevel( requestPosition, "red", newRed );
+    setColorToLevel( requestPosition, "green", newGreen );
+    setColorToLevel( requestPosition, "blue", newBlue );
+    setColorToLevel( requestPosition, "white", newWhite );
+  }
+
+  delay( 50 ); // give the web server a small amount of time to buffer and send
+  sendBlank();
+}
+
+/**
+ * Handles API requests to set a pattern
+ * 
+ * @return void
+ * @author costmo
+ * @since  20181113
+ */
+void handlePattern()
+{
+  
+}
+
+/**
  * Handles API requests to control lights
+ * 
+ * Accepted input parameters from GET are:
+ *   p = "position" = first|second
+ *   c = "color" = red|green|blue|white|all
+ *   l ="level" = 0-100
  * 
  * @return void
  * @author costmo
@@ -608,11 +713,6 @@ float getRatioForColor( String whichPosition, String color )
  */
 void handleControl()
 {
-  // parse the incoming request and do the work
-  // p = "position" = first|second
-  // c = "color" = red|green|blue|white|all
-  // l ="level" = 0-100
-
   String lightPosition = server.arg( "p" );
   String lightColor = server.arg( "c" );
   int lightLevel = server.arg( "l" ).toInt();
@@ -639,9 +739,7 @@ void handleControl()
     setColorToLevel( requestPosition, requestColor, requestLevel );
   }
   delay( 50 ); // give the web server a small amount of time to buffer and send
-  // server.send( 200, "text/html", getStatus() );
   sendBlank();
-  server.send( 200, "text/html", "" ); // see if we can improve response times a little bit
 }
 
 /**
