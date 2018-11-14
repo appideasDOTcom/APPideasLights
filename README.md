@@ -1,7 +1,5 @@
 This is code that was written to accompany a custom-built WiFi controller for 5050SMD LED light strips. The Instructable that shows you how to build the hardware is here:
-https://www.instructables.com/id/Wifi-Led-Light-Strip-Controller/
-
-The Instructable will be public in early November. I'm waiting for November contests to be announced.
+https://www.instructables.com/id/WiFi-LED-Light-Strip-Controller/
 
 The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the Instructable link above.
 
@@ -63,7 +61,7 @@ http://10.0.42.241:5050/control?p=first&c=red&l=100
 
 I have written a crap-ton of mobile apps, but this is my first in React Native. It is functional, but not written with best practices. A majority of the items on the Issues list are related to that fact. If you are an experienced React Native developer and wouldn't mind offering a few hours to refactor this code before the codebase grows to be large, that would be awesome. Issue #1 is the core of it all.
 
-If you're here before the Instructable is published, check out this Instructable about making custom PCBs on a CNC router:
+Check out part 1 of this Instructable series. It's about making custom PCBs on a CNC router:
 
 https://www.instructables.com/id/Custom-PCBs-on-a-CNC-Router/
 
