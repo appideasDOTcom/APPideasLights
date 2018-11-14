@@ -108,6 +108,17 @@ struct StoredSettings
     int offset = 0;
   } romSettings;
 
+// Variables to help us run patterns
+bool doRunPattern = false;
+String patternPosition = String( "" );
+int patternDuration = 0;
+int transitionDuration = 0;
+String patternString = String( "" );
+int patternTimerLoopCount = 0;
+int patternItemLoopCount = 0;
+int patternCount = 0;
+int patternArray[16][4];
+
 /**
  * Run on device power-on
  * 
@@ -288,6 +299,33 @@ void loop()
   
   // Listen for OTA updates
   ArduinoOTA.handle();
+
+  // If the flag has been flipped telling us to run a pattern, do it
+  if( doRunPattern )
+  {
+    performPattern();
+    patternTimerLoopCount++;
+    // if we've reached the duration for this pattern, perform the next move 
+    if( (patternTimerLoopCount >= patternDuration) )
+    {
+      //Serial.println( "SWITCHING TO NEXT PATTERN PIECE" );
+      // advance to the next patternItem
+      patternItemLoopCount++;
+      // If we're at the last item in the pattern, go back to the beginning
+      if( (patternCount > 0) && ((patternItemLoopCount % patternCount) == 0) )
+      {
+        //doRunPattern = false;
+        patternItemLoopCount = 0;
+        //Serial.println( "REPEATING PATTERN" );
+      }
+      
+      patternTimerLoopCount = 0;
+    }
+    delayMicroseconds( 700 ); // This is not a reliable way to do timing, but I didn't want to add a RTC
+                               // You may need to adjust this value if more or less processing is bogging down your controller
+                               // In theory, this will be a few clock cycles off at 1000 microseconds (1 millisecond)
+                               // We want the loop to run as close to 1 millisecond as possible, but it will probably be OK if it's a little off
+  }
 }
 
 /**
@@ -688,7 +726,80 @@ void handleMultiset()
 }
 
 /**
- * Handles API requests to set a pattern
+ * Performs pattern changes when triggered from loop()
+ * 
+ * @return void
+ * @author costmo
+ * @since  20181113
+ */
+void performPattern()
+{
+  // set the position to change
+  String lightPosition = patternPosition;
+  String requestPosition = "first";
+  if( lightPosition.equals( "second" ) )
+  {
+    requestPosition = "second";
+  }
+
+  // Reset the lights to off at the beginning of the cycle
+  // This behavior will probably change
+  if( patternTimerLoopCount == 0 )
+  {
+    setColorToLevel( requestPosition, "all", 0 );
+  }
+  
+  String colors[] = { "red", "green", "blue", "white" };
+  for( int i = 0; i < 4; i++ )
+  {
+    float colorRatio = ((float)patternArray[patternItemLoopCount][i] / (float)100);
+    int requestLevel = ceil(colorRatio * maxBrightness);
+
+    // if we're between the transitions, set the lights to the destination values
+    if( (patternTimerLoopCount >= transitionDuration) &&
+        (patternTimerLoopCount <= (patternDuration - transitionDuration)) )
+    {
+      setColorToLevel( requestPosition, colors[i], patternArray[patternItemLoopCount][i] );
+    }
+    else if( patternTimerLoopCount < transitionDuration ) // if we're at the beginning of a transition
+    {
+      float targetRatio = (float)0;
+      if( transitionDuration > 0 )
+      {
+        targetRatio = (((float)patternTimerLoopCount) / (float)transitionDuration);
+        requestLevel = ceil(targetRatio * requestLevel);
+      }
+      setColorToLevel( requestPosition, colors[i], requestLevel );
+    }
+    else if( (patternTimerLoopCount >= (patternDuration - transitionDuration)) ) // if we're at the end of a transition
+    {
+      float targetRatio = (float)0;
+      if( transitionDuration > 0 )
+      {
+        targetRatio = (((float)patternDuration - (float)patternTimerLoopCount) / (float)transitionDuration);
+        requestLevel = ceil(targetRatio * requestLevel);
+      }
+      setColorToLevel( requestPosition, colors[i], requestLevel );
+    }
+
+  } // for( int i = 0; i < 4; i++ )
+}
+
+
+
+
+/**
+ * Handles API requests to set a pattern. This sets global variables and then allows loop() to handle the triggering
+ * 
+ * Accepted input parameters from GET are:
+ *   p = "position" = first|second
+ *   d = "duration" = The number of milliseconds for the total duration of the effect. 1000 = 1 second
+ *   t = "transition time" = The number of milliseconds for the transition between colors
+ *   c = "color" = A JSON-encoded string with four comma separated integers between 0 and 100, representing RGBW intensity.
+ *                 The settings for each stage of the transition should be enclosed in brackets. For example, a transition
+ *                 from red to green to blue with 3 seconds on each color and 1/3 of a second for the transition looks
+ *                 like this
+ *                   p=first&d=3000&t=333&c=[100,0,0,0],[0,100,0,0],[0,0,100,0]
  * 
  * @return void
  * @author costmo
@@ -696,7 +807,59 @@ void handleMultiset()
  */
 void handlePattern()
 {
-  
+  patternPosition = server.arg( "p" );
+  patternDuration = server.arg( "d" ).toInt();
+  transitionDuration = server.arg( "t" ).toInt();
+  patternString = server.arg( "c" );
+  patternCount = 0;
+
+  unsetPatternArray();
+
+  // split the incoming string and write it to a global array so that it doesn't have to be parsed on every loop
+  char *token = strtok( (char *)patternString.c_str(), "],[" );
+
+  int count = 0;
+  int patternNumber = 0;
+  patternCount = 1;
+  while( token != NULL )
+  {
+    if( count > 3 )
+    {
+      count = 0;
+      patternNumber++;
+      patternCount++;
+    }
+    patternArray[patternNumber][count] = atoi( token );
+    count++;
+    token = strtok( NULL, "],[" );
+  }
+
+  // toggle loop control to start the pattern
+  patternItemLoopCount = 0;
+  patternTimerLoopCount = 0;
+  doRunPattern = true;
+
+  delay( 50 ); // give the web server a small amount of time to buffer and send
+  sendBlank();
+}
+
+/**
+ * Set the values of the global pattern array to -1, essentially making them "unset"
+ * 
+ * @return void
+ * @author costmo
+ * @since  20181113
+ */
+void unsetPatternArray()
+{
+  bool haltLoop = false;
+  for( int i = 0; i < 16; i++ )
+  {
+    for( int j = 0; j < 4; j++ )
+    {
+      patternArray[i][j] = -1;
+    }
+  }
 }
 
 /**
@@ -713,6 +876,11 @@ void handlePattern()
  */
 void handleControl()
 {
+  // toggle loop control to halt any running patterns
+  doRunPattern = false;
+  patternItemLoopCount = 0;
+  patternTimerLoopCount = 0;
+  
   String lightPosition = server.arg( "p" );
   String lightColor = server.arg( "c" );
   int lightLevel = server.arg( "l" ).toInt();
@@ -767,7 +935,7 @@ String getTime()
   while( !cb ) 
   {
     //Serial.println( "Problem reading from NTP server. Retrying in 10 seconds..." );
-    delay( 10000);
+    delay( 10000 );
     //Serial.println( "Trying again..." );
     cb = udp.parsePacket();
   }
