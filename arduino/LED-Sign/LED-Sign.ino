@@ -325,7 +325,7 @@ void loop()
                                // You may need to adjust this value if more or less processing is bogging down your controller
                                // In theory, this will be a few clock cycles off at 1000 microseconds (1 millisecond)
                                // We want the loop to run as close to 1 millisecond as possible, but it will probably be OK if it's a little off
-  }
+  } // if( doRunPattern )
 }
 
 /**
@@ -656,6 +656,11 @@ float getRatioForColor( String whichPosition, String color )
  */
 void handleMultiset()
 {
+  // toggle loop control to start the pattern
+  patternItemLoopCount = 0;
+  patternTimerLoopCount = 0;
+  doRunPattern = false;
+  
   bool requestAllPositions = false;
   // set the position to change
   String lightPosition = server.arg( "p" );
@@ -743,7 +748,7 @@ void performPattern()
   }
 
   // Reset the lights to off at the beginning of the cycle
-  // This behavior will probably change
+  // This behavior should change - maybe removed altogether
   if( patternTimerLoopCount == 0 )
   {
     setColorToLevel( requestPosition, "all", 0 );
@@ -759,7 +764,7 @@ void performPattern()
     if( (patternTimerLoopCount >= transitionDuration) &&
         (patternTimerLoopCount <= (patternDuration - transitionDuration)) )
     {
-      setColorToLevel( requestPosition, colors[i], patternArray[patternItemLoopCount][i] );
+        setColorToLevel( requestPosition, colors[i], requestLevel );
     }
     else if( patternTimerLoopCount < transitionDuration ) // if we're at the beginning of a transition
     {
@@ -768,8 +773,8 @@ void performPattern()
       {
         targetRatio = (((float)patternTimerLoopCount) / (float)transitionDuration);
         requestLevel = ceil(targetRatio * requestLevel);
+        setColorToLevel( requestPosition, colors[i], requestLevel );
       }
-      setColorToLevel( requestPosition, colors[i], requestLevel );
     }
     else if( (patternTimerLoopCount >= (patternDuration - transitionDuration)) ) // if we're at the end of a transition
     {
@@ -778,8 +783,9 @@ void performPattern()
       {
         targetRatio = (((float)patternDuration - (float)patternTimerLoopCount) / (float)transitionDuration);
         requestLevel = ceil(targetRatio * requestLevel);
+        setColorToLevel( requestPosition, colors[i], requestLevel );
       }
-      setColorToLevel( requestPosition, colors[i], requestLevel );
+      
     }
 
   } // for( int i = 0; i < 4; i++ )
