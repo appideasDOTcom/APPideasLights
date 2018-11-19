@@ -57,6 +57,14 @@ Here's an example call to the controller:
 http://10.0.42.241:5050/control?p=first&c=red&l=100
 ```
 
+The feature/patternLoops branch contains two more endpoints that have no access in the app (yet), but if you want to check out that branch and upload the Arduino code to your ESP board, you may also use these endpoints:
+```
+/multiset - Set the values of all LEDS (red, green, blue and white) with a single network request
+/pattern - Run a pattern, such as strobe or color changes on a timer
+```
+
+See issue #12 (Programmable patterns) and issue #16 (Save colors).
+
 ## Misc
 
 I have written a crap-ton of mobile apps, but this is my first in React Native. It is functional, but not written with best practices. A majority of the items on the Issues list are related to that fact. If you are an experienced React Native developer and wouldn't mind offering a few hours to refactor this code before the codebase grows to be large, that would be awesome. Issue #1 is the core of it all.
