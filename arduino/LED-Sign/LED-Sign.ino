@@ -43,29 +43,29 @@ WiFiUDP udp;
 
 // For reference (pin mapping for ESP8266-12E):
 // D0/GPIO16      = 16;
-// D1/GPIO5       = 5;
-// D2/GPIO4       = 0;
+// D1/GPIO5       = 0;
+// D2/GPIO4       = 5;
 // D3/GPIO0       = 4;
 
 // D4/GPIO2       = 2;
 
 // D5/GPIO14      = 14;
-// D6/GPIO12      = 13;
+// D6/GPIO12      = 15;
 // D7/GPIO13      = 12;
-// D8/GPIO15      = 15;
+// D8/GPIO15      = 13;
 
 
 // Pin mapping for the first string of lights. Pins D0 - D3
 #define WHITE_LED_FIRST     16
-#define BLUE_LED_FIRST      5
-#define RED_LED_FIRST       0
+#define BLUE_LED_FIRST      0
+#define RED_LED_FIRST       5
 #define GREEN_LED_FIRST     4
 
 // Second string of lights. Pins D5 - D8
 #define WHITE_LED_SECOND     14
-#define BLUE_LED_SECOND      13
+#define BLUE_LED_SECOND      15
 #define RED_LED_SECOND       12
-#define GREEN_LED_SECOND     15
+#define GREEN_LED_SECOND     13
 
 int maxBrightness = 1024;
 int offBrightness = 0;
