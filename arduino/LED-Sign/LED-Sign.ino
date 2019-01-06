@@ -48,11 +48,9 @@ WiFiUDP udp;
 // D3/GPIO0       = 4;
 
 // D4/GPIO2       = 2;
-
 // D5/GPIO14      = 14;
-// D6/GPIO12      = 12;
-// D7/GPIO13      = 15;
-// D8/GPIO15      = 13;
+// D6/GPIO12      = 13;
+// D7/GPIO13      = 12;
 
 
 // Pin mapping for the first string of lights. Pins D0 - D3
@@ -62,10 +60,10 @@ WiFiUDP udp;
 #define GREEN_LED_FIRST     4
 
 // Second string of lights. Pins D5 - D8
-#define WHITE_LED_SECOND     14
-#define BLUE_LED_SECOND      12
-#define RED_LED_SECOND       15
-#define GREEN_LED_SECOND     13
+#define WHITE_LED_SECOND     2
+#define BLUE_LED_SECOND      14
+#define RED_LED_SECOND       13
+#define GREEN_LED_SECOND     12
 
 int maxBrightness = 1024;
 int offBrightness = 0;
