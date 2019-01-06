@@ -8,9 +8,9 @@ The Instructables article and the writing at APPideas are nearly identical, but 
 An Instructables article that covers version 9 (an older version) of the hardware is here:
 https://www.instructables.com/id/WiFi-LED-Light-Strip-Controller/
 
-The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the links above. If you built hardware version 9 or earlier (anything prior to the "Easier" WiFi controller article), you will need to checkout the Arduino code from the alt/v9Hardware branch. Alternatively, you can manually change the Arduino code to adjust the pin assignemtns for that version of the PCB.
+The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the links above. If you built hardware version 9 or earlier (anything prior to the "Easier" WiFi controller article), you will need to checkout the Arduino code from the alt/v9Hardware branch. Alternatively, you can manually change the Arduino code to adjust the pin assignments for that version of the PCB.
 
-The resources directory contains the license file, files for CNC routers and 3D printers, and Fritzing and Eagle documents. V10 folders contain current files. V9 and previous, as well as Fritzing files are for legacy versions of the hardware.
+The resources directory contains the license file, files for CNC routers and 3D printers, and Fritzing, Eagle and Fusion 360 documents. V10 folders contain current files. V9 and previous, as well as Fritzing files are for legacy versions of the hardware.
 
 The mobile-app directory has a React Native project, which produced native code for both Android and iOS.
 
