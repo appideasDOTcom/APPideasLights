@@ -1,7 +1,14 @@
 This is code that was written to accompany a custom-built WiFi controller for 5050SMD LED light strips. The Instructable that shows you how to build the hardware is here:
+https://www.instructables.com/id/Easier-WiFi-LED-Light-Strip-Controller/
+The APPideas article that covers start-to-finish instructions is available here:
+https://appideas.com/the-appideas-wifi-controller-for-led-light-strips/
+
+The Instructables article and the writing at APPideas are nearly identical, but are organized differently. The APPideas write-up is more likely to be kept up-to-date.
+
+An Instructables article that covers version 9 (an older version) of the hardware is here:
 https://www.instructables.com/id/WiFi-LED-Light-Strip-Controller/
 
-The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the Instructable link above. Please note that the pin assignments in the Arduino code do not currently match the wiring diagram given in the Instructable. If you are wiring the electronics based on those instructions, you will need to swap the pin assignments on lines 60 & 61 and 66 & 67 of the sketch (blue lights connected to pins 0 and 15, and red lights connected to pins 5 and 12). Instructions for a new and improved PCB are coming soon.
+The arduino directory contains code to be uploaded to an ESP8266-12E development board. Directions for loading the Arduino code are available at the links above. If you built hardware version 9 or earlier (anything prior to the "Easier" WiFi controller article), you will need to checkout the Arduino code from the alt/v9Hardware branch. Alternatively, you can manually change the Arduino code to adjust the pin assignemtns for that version of the PCB.
 
 The resources directory contains the license file, files for CNC routers and 3D printers, and Fritzing and Eagle documents. V10 folders contain current files. V9 and previous, as well as Fritzing files are for legacy versions of the hardware.
 
